@@ -1,0 +1,30 @@
+{
+  "country": "Japan",
+  "last_updated": "2026-04-18",
+  "visas": {
+    "tourist": {
+      "requirements": [
+        "Valid passport (6 months validity)",
+        "Completed visa application",
+        "Passport photos",
+        "Flight booking",
+        "Hotel reservation",
+        "Proof of funds"
+      ],
+      "processing_time": "5 working days",
+      "fees": "¥3,000",
+      "validity": "30-90 days",
+      "ielts_required": false
+    }
+  },
+  "sources": [
+    {
+      "name": "Japan Immigration",
+      "url": "https://www.mofa.go.jp/j_info/visit/visa/",
+      "type": "official"
+    }
+  ],
+  "country_code": "japan",
+  "last_scraped": "2026-04-18T15:28:22.544199",
+  "scraper_version": "2.0"
+}

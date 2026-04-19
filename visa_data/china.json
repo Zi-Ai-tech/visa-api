@@ -1,0 +1,31 @@
+{
+  "country": "China",
+  "last_updated": "2026-04-18",
+  "visas": {
+    "tourist": {
+      "requirements": [
+        "Valid passport (6 months validity)",
+        "Completed visa application",
+        "Passport photos",
+        "Flight booking",
+        "Hotel reservation",
+        "Proof of funds",
+        "Invitation letter (if applicable)"
+      ],
+      "processing_time": "3-7 working days",
+      "fees": "$140",
+      "validity": "30-90 days",
+      "ielts_required": false
+    }
+  },
+  "sources": [
+    {
+      "name": "China Immigration",
+      "url": "https://www.visaforchina.cn",
+      "type": "official"
+    }
+  ],
+  "country_code": "china",
+  "last_scraped": "2026-04-18T15:28:23.546900",
+  "scraper_version": "2.0"
+}

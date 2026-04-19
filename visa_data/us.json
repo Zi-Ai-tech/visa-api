@@ -1,0 +1,71 @@
+{
+  "country": "United States",
+  "last_updated": "2026-04-18",
+  "visas": {
+    "tourist": {
+      "requirements": [
+        "Passportvalid for travel to the United States – Your passport must be valid for at least six months beyond your period of stay in the United States (unless exempt bycountry-specific agreements). Each individual who needs a visa must submit a separate application, including any family members listed in your passport.",
+        "Photo– You will upload your photo while completing the online Form DS-160. Your photo must meet thePhotograph Requirements.",
+        "Online Nonimmigrant Visa Application,Form DS-160–Learn moreabout completing theDS-160. You must: 1) complete the online visa application and 2) print the application form confirmation page to bring to your interview.",
+        "Nonimmigrant Visa Application,Form DS-160confirmation page.",
+        "Photo– You will upload your photo while completing the online Form DS-160. If thephoto upload fails,you must bring one printed photo in the format explained in thePhotograph Requirements.",
+        "Fees - Pay the non-refundable visa application fee, if you are required to pay it before your interview. If your visa is approved, you may also need to pay a visa issuance fee, if applicable to your nationality. Fee information is provided below:",
+        "The purpose of your trip,",
+        "Your ability to pay all costs of the trip."
+      ],
+      "documents": [],
+      "processing_time": "2-4 weeks for interview scheduling",
+      "fees": "$185",
+      "validity": "10 years (B1/B2)",
+      "ielts_required": false,
+      "interview_required": true
+    },
+    "student": {
+      "requirements": [
+        "Your academic preparation, such as:Transcripts, diplomas, degrees, or certificates from schools you attended; andStandardized test scores required by your U.S. school;",
+        "Nonimmigrant Visa Application,Form DS-160confirmation page.",
+        "There is no guarantee you will be issued a visa. Do not make final travel plans or buy tickets until you have a visa.",
+        "Passportvalid for travel to the United States – Your passport must be valid for at least six months beyond your period of stay in the United States (unless exempt bycountry-specific agreements). Each individual who needs a visa must submit a separate application, including any family members listed in your passport.",
+        "Transcripts, diplomas, degrees, or certificates from schools you attended; and",
+        "If you have a temporary break in your study, view the information on the SEVP website underDo Students Returning from Temporary Absences Need New Visas?If your student visa is still valid, but you are outside the United States, you should consult with your Designated School Officials.",
+        "A valid U.S. visa in an expired passport is still valid. Unless canceled or revoked, a visa is valid until its expiration date. If you have a valid visa in your expired passport, do not remove it from your expired passport. You may use your valid visa in your expired passport along with a new valid passport for travel and admission to the United States.",
+        "Your minor children are permitted to attend school in the United States while accompanying you."
+      ],
+      "documents": [],
+      "processing_time": "2-4 weeks",
+      "fees": "$185 + $350 SEVIS fee",
+      "validity": "Duration of studies",
+      "ielts_required": true,
+      "interview_required": true
+    },
+    "work": {
+      "requirements": [
+        "Job offer from US employer",
+        "Labor certification",
+        "Petition approval",
+        "Qualifications proof"
+      ],
+      "processing_time": "3-6 months",
+      "fees": "$190 - $715",
+      "ielts_required": false,
+      "interview_required": true
+    }
+  },
+  "sources": [
+    {
+      "name": "U.S. Department of State",
+      "url": "https://travel.state.gov",
+      "type": "official",
+      "domain_type": ".gov"
+    },
+    {
+      "name": "USCIS",
+      "url": "https://www.uscis.gov",
+      "type": "official",
+      "domain_type": ".gov"
+    }
+  ],
+  "country_code": "us",
+  "last_scraped": "2026-04-18T15:28:33.595660",
+  "scraper_version": "2.0"
+}

@@ -1,0 +1,28 @@
+{
+  "country": "Turkey",
+  "last_updated": "2026-04-18",
+  "visas": {
+    "tourist": {
+      "requirements": [
+        "Valid passport (6 months validity)",
+        "Passport photos",
+        "Hotel booking",
+        "Return flight ticket"
+      ],
+      "processing_time": "24-48 hours (e-Visa)",
+      "fees": "$60",
+      "validity": "30-90 days",
+      "ielts_required": false
+    }
+  },
+  "sources": [
+    {
+      "name": "Turkey Immigration",
+      "url": "https://www.evisa.gov.tr",
+      "type": "official"
+    }
+  ],
+  "country_code": "turkey",
+  "last_scraped": "2026-04-18T15:28:29.569984",
+  "scraper_version": "2.0"
+}

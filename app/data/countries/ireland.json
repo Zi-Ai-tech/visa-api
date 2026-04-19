@@ -1,0 +1,123 @@
+{
+  "country": "Ireland",
+  "country_code": "ie",
+  "last_updated": "2026-01-15",
+  "keywords": ["ireland", "irish", "dublin"],
+  "visas": {
+    "tourist": {
+      "requirements": [
+        "Valid passport with at least 6 months validity",
+        "Completed visa application form",
+        "Passport-sized photographs",
+        "Travel itinerary",
+        "Proof of accommodation",
+        "Travel insurance",
+        "Proof of sufficient funds (€50 per day)"
+      ],
+      "documents": [
+        "Bank statements (last 6 months)",
+        "Employment letter",
+        "Travel insurance certificate",
+        "Flight reservations",
+        "Hotel bookings"
+      ],
+      "processing_time": "8 weeks",
+      "fees": "€80",
+      "validity": "90 days",
+      "ielts_required": false,
+      "interview_required": false,
+      "biometrics_required": true,
+      "pakistani_special": {
+        "requirements": [
+          "Additional proof of ties to Pakistan",
+          "Detailed travel history",
+          "Sponsorship letter (if applicable)"
+        ],
+        "notes": "Higher scrutiny for Pakistani applicants. Strong ties to home country essential.",
+        "additional_documents": [
+          "Property documents",
+          "Family registration certificate"
+        ]
+      }
+    },
+    "student": {
+      "requirements": [
+        "Acceptance letter from recognized Irish institution",
+        "Proof of tuition fee payment",
+        "Proof of funds (€7,000 minimum)",
+        "Private medical insurance",
+        "English proficiency proof",
+        "Police clearance certificate"
+      ],
+      "documents": [
+        "University acceptance letter",
+        "Bank statements (6 months)",
+        "IELTS/TOEFL certificate",
+        "Academic transcripts",
+        "Statement of purpose",
+        "Accommodation proof"
+      ],
+      "processing_time": "4-8 weeks",
+      "fees": "€100",
+      "validity": "Duration of course + 2 years (stay back)",
+      "ielts_required": true,
+      "minimum_ielts_score": "6.0 overall",
+      "ielts_note": "Minimum 6.0 overall with no band below 5.5",
+      "interview_required": true,
+      "biometrics_required": true,
+      "pakistani_special": {
+        "requirements": [
+          "IELTS mandatory (minimum 6.0)",
+          "Detailed financial documentation",
+          "Embassy interview required"
+        ],
+        "notes": "Pakistani students must demonstrate strong academic background and clear study intentions.",
+        "additional_documents": [
+          "Educational credentials verified by HEC",
+          "Father's/Mother's income proof",
+          "Property valuation documents"
+        ]
+      }
+    },
+    "work": {
+      "requirements": [
+        "Job offer from Irish employer",
+        "Employment permit",
+        "Relevant qualifications",
+        "Proof of experience",
+        "Labour market test (for some roles)"
+      ],
+      "documents": [
+        "Employment contract",
+        "CV/Resume",
+        "Qualification certificates",
+        "Experience letters",
+        "Police clearance"
+      ],
+      "processing_time": "8-12 weeks",
+      "fees": "€500-1,000",
+      "validity": "2 years (renewable)",
+      "ielts_required": true,
+      "minimum_ielts_score": "6.5 overall",
+      "ielts_note": "English proficiency required for most work permits",
+      "interview_required": true,
+      "biometrics_required": true
+    }
+  },
+  "sources": [
+    {
+      "name": "Irish Immigration Service",
+      "url": "https://www.irishimmigration.ie",
+      "type": "official",
+      "domain_type": ".ie",
+      "last_verified": "2026-01-15"
+    },
+    {
+      "name": "Department of Foreign Affairs Ireland",
+      "url": "https://www.dfa.ie/travel/visas/",
+      "type": "official",
+      "domain_type": ".ie",
+      "last_verified": "2026-01-10"
+    }
+  ]
+}

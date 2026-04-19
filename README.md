@@ -1,0 +1,28 @@
+"# ?? Visa RAG System - AI-Powered Visa Assistant" 
+"" 
+"## ?? Features" 
+"- **40+ Countries** - Comprehensive visa information" 
+"- **Live Web Scraping** - Auto-updates from official sources" 
+"- **Visa Type Detection** - Tourist, Student, Work visas" 
+"- **Pakistani-Specific Info** - Special requirements for Pakistani nationals" 
+"- **Confidence Scoring** - High/Medium/Low with percentages" 
+"- **Rate Limiting** - 10 requests/minute" 
+"- **Official Sources Only** - .gov, .gov.uk, .gc.ca domains" 
+"" 
+"## ?? Installation" 
+'```bash' 
+"git clone https://github.com/Zi-Ai-Tech/visa-api.git" 
+"cd visa-api" 
+"python -m venv venv" 
+"venv\\Scripts\\activate  # Windows" 
+"pip install -r requirements.txt" 
+'```' 
+"" 
+"## ?? Running" 
+'```bash' 
+"# Run the Flask app" 
+"python app.py" 
+"" 
+"# Scrape fresh data (optional)" 
+"python scraper_service.py scrape-all" 
+'```' 

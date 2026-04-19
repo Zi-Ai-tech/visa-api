@@ -1,0 +1,30 @@
+{
+  "country": "Singapore",
+  "last_updated": "2026-04-18",
+  "visas": {
+    "tourist": {
+      "requirements": [
+        "Valid passport (6 months validity)",
+        "Completed visa application",
+        "Passport photos",
+        "Flight booking",
+        "Hotel reservation",
+        "Proof of funds"
+      ],
+      "processing_time": "3-7 working days",
+      "fees": "Varies by nationality",
+      "validity": "30-90 days",
+      "ielts_required": false
+    }
+  },
+  "sources": [
+    {
+      "name": "Singapore Immigration",
+      "url": "https://www.ica.gov.sg",
+      "type": "official"
+    }
+  ],
+  "country_code": "singapore",
+  "last_scraped": "2026-04-18T15:28:25.554966",
+  "scraper_version": "2.0"
+}

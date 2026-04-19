@@ -1,0 +1,28 @@
+{
+  "country": "Oman",
+  "last_updated": "2026-04-18",
+  "visas": {
+    "tourist": {
+      "requirements": [
+        "Valid passport (6 months validity)",
+        "Passport photos",
+        "Hotel booking",
+        "Return flight ticket"
+      ],
+      "processing_time": "3-5 working days",
+      "fees": "$100-200",
+      "validity": "30-90 days",
+      "ielts_required": false
+    }
+  },
+  "sources": [
+    {
+      "name": "Oman Immigration",
+      "url": "https://evisa.rop.gov.om",
+      "type": "official"
+    }
+  ],
+  "country_code": "oman",
+  "last_scraped": "2026-04-18T15:28:27.566368",
+  "scraper_version": "2.0"
+}

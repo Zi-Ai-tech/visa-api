@@ -1,0 +1,60 @@
+{
+  "country": "Australia",
+  "last_updated": "2026-04-18",
+  "visas": {
+    "tourist": {
+      "requirements": [
+        "Valid passport",
+        "Completed application form",
+        "Proof of funds ($5,000+ AUD)",
+        "Travel itinerary",
+        "Health insurance",
+        "Character certificate"
+      ],
+      "processing_time": "20-33 days",
+      "fees": "$150 AUD",
+      "validity": "3, 6, or 12 months",
+      "ielts_required": false
+    },
+    "student": {
+      "requirements": [
+        "Confirmation of Enrolment (CoE)",
+        "Genuine Temporary Entrant statement",
+        "Proof of funds ($21,041 AUD/year)",
+        "Health insurance (OSHC)",
+        "English proficiency",
+        "Health examination"
+      ],
+      "processing_time": "4-8 weeks",
+      "fees": "$650 AUD",
+      "validity": "Course duration",
+      "ielts_required": true,
+      "minimum_ielts_score": "5.5 - 6.5"
+    },
+    "work": {
+      "requirements": [
+        "Sponsorship by Australian employer",
+        "Skills assessment",
+        "Relevant work experience",
+        "English proficiency",
+        "Health and character checks"
+      ],
+      "processing_time": "3-12 months",
+      "fees": "$4,115 AUD",
+      "validity": "Up to 4 years",
+      "ielts_required": true,
+      "minimum_ielts_score": "6.0 in each band"
+    }
+  },
+  "sources": [
+    {
+      "name": "Department of Home Affairs",
+      "url": "https://immi.homeaffairs.gov.au",
+      "type": "official",
+      "domain_type": ".gov.au"
+    }
+  ],
+  "country_code": "australia",
+  "last_scraped": "2026-04-18T15:28:22.536794",
+  "scraper_version": "2.0"
+}

@@ -1,0 +1,64 @@
+{
+  "country": "Norway",
+  "last_updated": "2026-04-18",
+  "visas": {
+    "tourist": {
+      "requirements": [
+        "Valid passport (3 months beyond stay)",
+        "Schengen visa application form",
+        "Passport photos",
+        "Travel insurance (€30,000 minimum)",
+        "Proof of accommodation",
+        "Proof of sufficient funds",
+        "Flight reservation",
+        "Travel itinerary"
+      ],
+      "processing_time": "15 days",
+      "fees": "€80",
+      "validity": "90 days within 180-day period",
+      "ielts_required": false,
+      "interview_required": true
+    },
+    "student": {
+      "requirements": [
+        "Acceptance letter from educational institution",
+        "Proof of financial means",
+        "Health insurance",
+        "Accommodation proof",
+        "Academic records",
+        "Language proficiency (if required)"
+      ],
+      "processing_time": "4-8 weeks",
+      "fees": "€50-100",
+      "validity": "Duration of studies",
+      "ielts_required": true,
+      "interview_required": true
+    },
+    "work": {
+      "requirements": [
+        "Job offer/contract",
+        "Work permit approval",
+        "Qualifications proof",
+        "CV/Resume",
+        "Health insurance",
+        "Police clearance"
+      ],
+      "processing_time": "4-12 weeks",
+      "fees": "€75-150",
+      "validity": "1-2 years (renewable)",
+      "ielts_required": false,
+      "interview_required": true
+    }
+  },
+  "sources": [
+    {
+      "name": "Norway Immigration",
+      "url": "https://www.udi.no",
+      "type": "official",
+      "domain_type": ".no"
+    }
+  ],
+  "country_code": "norway",
+  "last_scraped": "2026-04-18T15:28:28.563911",
+  "scraper_version": "2.0"
+}

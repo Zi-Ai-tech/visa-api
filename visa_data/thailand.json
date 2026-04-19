@@ -1,0 +1,30 @@
+{
+  "country": "Thailand",
+  "last_updated": "2026-04-18",
+  "visas": {
+    "tourist": {
+      "requirements": [
+        "Valid passport (6 months validity)",
+        "Completed visa application",
+        "Passport photos",
+        "Flight booking",
+        "Hotel reservation",
+        "Proof of funds"
+      ],
+      "processing_time": "3-7 working days",
+      "fees": "Varies by nationality",
+      "validity": "30-90 days",
+      "ielts_required": false
+    }
+  },
+  "sources": [
+    {
+      "name": "Thailand Immigration",
+      "url": "https://www.thaievisa.go.th",
+      "type": "official"
+    }
+  ],
+  "country_code": "thailand",
+  "last_scraped": "2026-04-18T15:28:28.564932",
+  "scraper_version": "2.0"
+}

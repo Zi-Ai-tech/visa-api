@@ -1,0 +1,42 @@
+{
+  "country": "United Kingdom",
+  "last_updated": "2026-04-18",
+  "visas": {
+    "tourist": {
+      "requirements": [],
+      "documents": [],
+      "processing_time": "",
+      "fees": "",
+      "validity": "",
+      "ielts_required": false
+    },
+    "student": {
+      "requirements": [],
+      "documents": [],
+      "processing_time": "",
+      "fees": "",
+      "validity": "",
+      "ielts_required": true,
+      "ielts_note": "Minimum IELTS 5.5-6.0 depending on institution"
+    },
+    "work": {
+      "requirements": [],
+      "documents": [],
+      "processing_time": "",
+      "fees": "",
+      "validity": "",
+      "ielts_required": false
+    }
+  },
+  "sources": [
+    {
+      "name": "UK Visas and Immigration",
+      "url": "https://www.gov.uk/browse/visas-immigration",
+      "type": "official",
+      "domain_type": ".gov.uk"
+    }
+  ],
+  "country_code": "uk",
+  "last_scraped": "2026-04-18T15:28:24.908991",
+  "scraper_version": "2.0"
+}

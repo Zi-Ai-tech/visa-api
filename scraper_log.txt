@@ -1,0 +1,10 @@
+[2026-04-18 15:28:22] Starting full scrape of all countries
+[2026-04-18 15:28:22] ✅ Completed: canada
+[2026-04-18 15:28:22] ✅ Completed: australia
+[2026-04-18 15:28:22] ✅ Completed: ireland
+[2026-04-18 15:28:24] ✅ Completed: uk
+[2026-04-18 15:28:30] ✅ Completed: middle_east
+[2026-04-18 15:28:32] ✅ Completed: asia
+[2026-04-18 15:28:33] ✅ Completed: us
+[2026-04-18 15:28:39] ✅ Completed: schengen
+[2026-04-18 15:28:39] Scraping completed in 17.07 seconds

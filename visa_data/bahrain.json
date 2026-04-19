@@ -1,0 +1,28 @@
+{
+  "country": "Bahrain",
+  "last_updated": "2026-04-18",
+  "visas": {
+    "tourist": {
+      "requirements": [
+        "Valid passport (6 months validity)",
+        "Passport photos",
+        "Hotel booking",
+        "Return flight ticket"
+      ],
+      "processing_time": "3-5 working days",
+      "fees": "$100-200",
+      "validity": "30-90 days",
+      "ielts_required": false
+    }
+  },
+  "sources": [
+    {
+      "name": "Bahrain Immigration",
+      "url": "https://www.evisa.gov.bh",
+      "type": "official"
+    }
+  ],
+  "country_code": "bahrain",
+  "last_scraped": "2026-04-18T15:28:26.558979",
+  "scraper_version": "2.0"
+}

@@ -1,0 +1,30 @@
+{
+  "country": "India",
+  "last_updated": "2026-04-18",
+  "visas": {
+    "tourist": {
+      "requirements": [
+        "Valid passport (6 months validity)",
+        "Completed visa application",
+        "Passport photos",
+        "Flight booking",
+        "Hotel reservation",
+        "Proof of funds"
+      ],
+      "processing_time": "3-7 working days",
+      "fees": "Varies by nationality",
+      "validity": "30-90 days",
+      "ielts_required": false
+    }
+  },
+  "sources": [
+    {
+      "name": "India Immigration",
+      "url": "https://indianvisaonline.gov.in",
+      "type": "official"
+    }
+  ],
+  "country_code": "india",
+  "last_scraped": "2026-04-18T15:28:24.551811",
+  "scraper_version": "2.0"
+}

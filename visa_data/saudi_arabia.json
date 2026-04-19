@@ -1,0 +1,29 @@
+{
+  "country": "Saudi Arabia",
+  "last_updated": "2026-04-18",
+  "visas": {
+    "tourist": {
+      "requirements": [
+        "Valid passport (6 months validity)",
+        "Passport photos",
+        "Hotel booking",
+        "Return flight ticket",
+        "Travel insurance"
+      ],
+      "processing_time": "3-5 working days",
+      "fees": "$130",
+      "validity": "30-90 days",
+      "ielts_required": false
+    }
+  },
+  "sources": [
+    {
+      "name": "Saudi Arabia Immigration",
+      "url": "https://visa.mofa.gov.sa",
+      "type": "official"
+    }
+  ],
+  "country_code": "saudi_arabia",
+  "last_scraped": "2026-04-18T15:28:23.545456",
+  "scraper_version": "2.0"
+}

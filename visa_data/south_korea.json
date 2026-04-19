@@ -1,0 +1,30 @@
+{
+  "country": "South Korea",
+  "last_updated": "2026-04-18",
+  "visas": {
+    "tourist": {
+      "requirements": [
+        "Valid passport (6 months validity)",
+        "Completed visa application",
+        "Passport photos",
+        "Flight booking",
+        "Hotel reservation",
+        "Proof of funds"
+      ],
+      "processing_time": "3-7 working days",
+      "fees": "$40-90",
+      "validity": "90 days",
+      "ielts_required": false
+    }
+  },
+  "sources": [
+    {
+      "name": "South Korea Immigration",
+      "url": "https://www.visa.go.kr",
+      "type": "official"
+    }
+  ],
+  "country_code": "south_korea",
+  "last_scraped": "2026-04-18T15:28:27.561535",
+  "scraper_version": "2.0"
+}
