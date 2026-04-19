@@ -210,7 +210,7 @@ def load_official_sources():
     return sources
 
 # ============================================
-// FALLBACK DATA (Minimal - only for emergencies)
+#  FALLBACK DATA (Minimal - only for emergencies)
 # ============================================
 
 FALLBACK_VISA_DATA = {
@@ -252,7 +252,7 @@ OFFICIAL_SOURCES = load_official_sources()
 print(f"✅ Loaded sources for {len(OFFICIAL_SOURCES)} countries")
 
 # ============================================
-// PAKISTANI-SPECIFIC DETAILED REQUIREMENTS
+# PAKISTANI-SPECIFIC DETAILED REQUIREMENTS
 # ============================================
 
 PAKISTANI_DETAILED = {
@@ -356,7 +356,7 @@ PAKISTANI_DETAILED = {
 }
 
 # ============================================
-// COUNTRY DETECTION KEYWORDS
+#  COUNTRY DETECTION KEYWORDS
 # ============================================
 
 COUNTRY_KEYWORDS = {
@@ -524,7 +524,7 @@ def generate_answer(query, country_code, visa_info, visa_type, is_pakistani, con
         answer_parts.extend(generate_default_response(country_name, visa_type, specific_visa, is_pakistani, rules))
     
     # ============================================
-    // SOURCES (REAL URLs ONLY - NO FAKE SOURCES)
+    #  SOURCES (REAL URLs ONLY - NO FAKE SOURCES)
     # ============================================
     answer_parts.append("### 🔗 Official Sources")
     sources = OFFICIAL_SOURCES.get(country_code, [])
@@ -536,7 +536,7 @@ def generate_answer(query, country_code, visa_info, visa_type, is_pakistani, con
         answer_parts.append("• Contact the nearest embassy for official information")
     
     # ============================================
-    // UNIVERSAL DISCLAIMER
+    # // UNIVERSAL DISCLAIMER
     # ============================================
     answer_parts.append("\n### ⚠️ Important Notice")
     answer_parts.append("• Visa requirements change frequently. Always verify with official sources.")
@@ -594,7 +594,7 @@ def generate_us_response(visa_type, visa_data, is_pakistani, rules):
         parts.append("")
         parts.append(f"**⏱️ Processing Time Note:** {rules.get('processing_time_note', 'Varies by consulate')}")
         parts.append("")
-        parts.append(f"**📅 Validity Note:** {rules.get('validity_note', 'At officer\\'s discretion')}")
+        parts.append(f"**📅 Validity Note:** {rules.get('validity_note', 'At officer\'s discretion')}")
         parts.append("")
         
         if is_pakistani:
