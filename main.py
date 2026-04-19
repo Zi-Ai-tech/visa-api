@@ -7,6 +7,7 @@ import json
 import re
 from datetime import datetime
 import hashlib
+from visa_api_provider import get_visa_provider, VisaAPIProvider
 
 app = Flask(__name__)
 CORS(app)
@@ -407,6 +408,30 @@ COUNTRY_KEYWORDS = {
 # HELPER FUNCTIONS
 # ============================================
 
+def clean_requirements(requirements):
+    """Clean up scraped requirement text"""
+    if not requirements:
+        return []
+    
+    cleaned = []
+    for req in requirements[:5]:  # Limit to 5 most important
+        # Fix common typos and formatting
+        req = req.replace("Passportvalid", "Valid passport")
+        req = req.replace("bycountry", "by country")
+        req = req.replace("\u00a0", " ")
+        req = req.replace("\u2013", "-")
+        req = req.replace("thePhotograph", "the Photograph")
+        req = req.replace("thephoto", "the photo")
+        req = req.replace("Form DS-160\u2013Learn", "Form DS-160 - Learn")
+        req = req.replace("DS-160confirmation", "DS-160 confirmation")
+        req = req.replace("about completing theDS-160", "about completing the DS-160")
+        
+        # Only keep substantive requirements
+        if len(req) > 20 and req not in cleaned:
+            cleaned.append(req)
+    
+    return cleaned
+
 def validate_input(query):
     """Validate and sanitize input query"""
     if not query or not isinstance(query, str):
@@ -594,7 +619,8 @@ def generate_us_response(visa_type, visa_data, is_pakistani, rules):
         parts.append("")
         parts.append(f"**⏱️ Processing Time Note:** {rules.get('processing_time_note', 'Varies by consulate')}")
         parts.append("")
-        parts.append(f"**📅 Validity Note:** {rules.get('validity_note', 'At officer\'s discretion')}")
+        validity_default = "At officer's discretion"
+        parts.append(f"**📅 Validity Note:** {rules.get('validity_note', validity_default)}")
         parts.append("")
         
         if is_pakistani:
@@ -754,6 +780,38 @@ def calculate_confidence(country_code, visa_info, visa_type_specified):
 # def home():
 #     return render_template("index.html")
 
+@app.route("/api/debug/config", methods=["GET"])
+def debug_config():
+    """Debug endpoint to check configuration"""
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
+    
+    api_key = os.environ.get('TRAVELBUDDY_API_KEY')
+    
+    return jsonify({
+        "api_key_configured": bool(api_key),
+        "api_key_length": len(api_key) if api_key else 0,
+        "api_key_preview": api_key[:15] + "..." if api_key else None,
+        "api_host": os.environ.get('TRAVELBUDDY_API_HOST', 'not set')
+    })
+
+# Add this temporarily to main.py
+@app.route("/api/debug/api-test", methods=["GET"])
+def test_api_connection():
+    """Debug endpoint to test API connection"""
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
+    
+    api_key = os.environ.get('TRAVELBUDDY_API_KEY')
+    
+    return jsonify({
+        "api_key_configured": bool(api_key),
+        "api_key_preview": api_key[:10] + "..." if api_key else None,
+        "api_host": os.environ.get('TRAVELBUDDY_API_HOST')
+    })
+
 @app.route("/api/ask", methods=["POST"])
 @limiter.limit("10 per minute")
 def ask():
@@ -785,12 +843,14 @@ def ask():
         # Detect visa type
         visa_type = detect_visa_type(query_lower)
         visa_type_specified = visa_type != "unknown"
+        is_pakistani = "pakistani" in query_lower or "pakistan" in query_lower
 
         # 🚨 STRICT RULE: DO NOT ANSWER WITHOUT VISA TYPE
         if not visa_type_specified:
             return jsonify({
                 "status": "needs_clarification",
-                "message": f"{VISA_DATA.get(country, {}).get('country', country.upper())} visa requirements vary by type.",
+                "country_code": country,
+                "message": f"Visa requirements vary by type.",
                 "options": ["tourist", "student", "work", "business"],
                 "example_queries": [
                     f"{country} tourist visa requirements",
@@ -799,15 +859,10 @@ def ask():
                 ]
             })
 
-        is_pakistani = "pakistani" in query_lower or "pakistan" in query_lower
-
-        # Load data
+        # Load local data
         visa_info = VISA_DATA.get(country)
         if not visa_info:
-            return jsonify({
-                "error": "Data not available",
-                "confidence": "low"
-            }), 404
+            return jsonify({"error": "Data not available", "confidence": "low"}), 404
 
         visa_types = visa_info.get("visa_types", {})
         specific_visa = visa_types.get(visa_type)
@@ -818,25 +873,46 @@ def ask():
                 "confidence": "low"
             }), 404
 
-        # Build CLEAN response (NO DUPLICATION)
+        # ✅ TRY REAL-TIME API
+        realtime_info = None
+        try:
+            provider = get_visa_provider()
+            api_result = provider.get_visa_requirement(
+                destination=country,
+                nationality="PK" if is_pakistani else "US"
+            )
+            if api_result.get('confidence') == 'high':
+                realtime_info = {
+                    'visa_requirement': api_result.get('requirement'),
+                    'passport_validity': api_result.get('passport_validity'),
+                    'source': api_result.get('source')
+                }
+        except Exception as e:
+            print(f"Real-time API error: {e}")
+
+        # Build response
         response = {
             "country": visa_info.get("country"),
             "visa_type": visa_type,
-            "requirements": specific_visa.get("requirements", []),
+            "requirements": clean_requirements(specific_visa.get("requirements", [])),  # ← ADD THIS
             "processing_time_note": specific_visa.get("processing_time_note", "Varies by embassy"),
             "fees": specific_visa.get("fees", "Check official website"),
             "validity_note": specific_visa.get("validity_note", "Varies"),
-            "sources": OFFICIAL_SOURCES.get(country, []),
+            "sources": OFFICIAL_SOURCES.get(country, [])[:2],
             "last_updated": visa_info.get("last_updated"),
             "confidence": "high" if visa_info.get("source_type") == "scraped" else "medium"
         }
 
+        # ✅ ADD REALTIME DATA IF AVAILABLE
+        if realtime_info:
+            response["realtime"] = realtime_info
+            response["confidence"] = "high"
+
         return jsonify(response)
 
     except Exception as e:
-        return jsonify({
-            "error": "Internal server error"
-        }), 500
+        print(f"Error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
 
 @app.route("/api/countries", methods=["GET"])
 def list_countries():
@@ -868,6 +944,56 @@ def health():
         "sources_verified": len(OFFICIAL_SOURCES),
         "timestamp": datetime.now().isoformat()
     })
+
+# ============================================
+# REAL-TIME API ENDPOINTS (NEW)
+# ============================================
+
+@app.route("/api/visa/check", methods=["POST"])
+@limiter.limit("20 per minute")
+def check_visa_requirement():
+    """
+    Check visa requirements using real-time Travel Buddy API.
+    
+    Request body:
+    {
+        "destination": "US" or "united states",
+        "nationality": "PK" (optional, defaults to Pakistan)
+    }
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Invalid request"}), 400
+        
+        destination = data.get("destination", "").strip()
+        nationality = data.get("nationality", "PK").strip()
+        
+        if not destination:
+            return jsonify({"error": "Destination required"}), 400
+        
+        provider = get_visa_provider()
+        result = provider.get_visa_requirement(destination, nationality)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/cache/stats", methods=["GET"])
+def get_cache_stats():
+    """Get API cache statistics"""
+    provider = get_visa_provider()
+    return jsonify(provider.get_cache_stats())
+
+
+@app.route("/api/cache/clear", methods=["POST"])
+def clear_cache():
+    """Clear expired API cache entries"""
+    provider = get_visa_provider()
+    cleared = provider.clear_expired_cache()
+    return jsonify({"cleared": cleared})
 
 @app.errorhandler(429)
 def ratelimit_handler(e):
