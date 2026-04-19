@@ -750,105 +750,92 @@ def calculate_confidence(country_code, visa_info, visa_type_specified):
 # FLASK ROUTES
 # ============================================
 
-@app.route("/")
-def home():
-    return render_template("index.html")
+# @app.route("/")
+# def home():
+#     return render_template("index.html")
 
 @app.route("/api/ask", methods=["POST"])
 @limiter.limit("10 per minute")
 def ask():
-    print("📥 Received request to /api/ask", flush=True)
     try:
         data = request.get_json()
         if not data:
-            return jsonify({"error": "Invalid request data"}), 400
-            
-        query = data.get("query", "")
-        
-        # Input validation
-        is_valid, validation_message = validate_input(query)
+            return jsonify({"error": "Invalid request"}), 400
+
+        query = data.get("query", "").strip()
+
+        # Validate input
+        is_valid, msg = validate_input(query)
         if not is_valid:
-            return jsonify({"error": validation_message}), 400
-        
+            return jsonify({"error": msg}), 400
+
         if not query:
             return jsonify({"error": "Query required"}), 400
-        
+
         query_lower = query.lower()
-        
-        # Detect country and visa type
+
+        # Detect country
         country = detect_country(query_lower)
         if not country:
             return jsonify({
                 "error": "Country not detected",
-                "message": "Please specify a country",
-                "available_countries": list(VISA_DATA.keys())[:10]
+                "message": "Please clearly mention a country (e.g., US, UK, Canada)"
             }), 400
-        
+
+        # Detect visa type
         visa_type = detect_visa_type(query_lower)
         visa_type_specified = visa_type != "unknown"
+
+        # 🚨 STRICT RULE: DO NOT ANSWER WITHOUT VISA TYPE
+        if not visa_type_specified:
+            return jsonify({
+                "status": "needs_clarification",
+                "message": f"{VISA_DATA.get(country, {}).get('country', country.upper())} visa requirements vary by type.",
+                "options": ["tourist", "student", "work", "business"],
+                "example_queries": [
+                    f"{country} tourist visa requirements",
+                    f"{country} student visa for Pakistani",
+                    f"{country} work visa process"
+                ]
+            })
+
         is_pakistani = "pakistani" in query_lower or "pakistan" in query_lower
-        
-        # Check cache
-        cache_key = get_cache_key(query_lower, country, visa_type, is_pakistani)
-        if cache_key in response_cache:
-            cached_response = response_cache[cache_key]
-            if (datetime.now() - cached_response['timestamp']).seconds < CACHE_TIMEOUT:
-                print(f"📦 Returning cached response", flush=True)
-                return jsonify(cached_response['data'])
-        
-        # Get visa information
-        visa_info = VISA_DATA.get(country, FALLBACK_VISA_DATA.get(country, {}))
+
+        # Load data
+        visa_info = VISA_DATA.get(country)
         if not visa_info:
             return jsonify({
-                "error": "Country data not available",
-                "message": f"Visa information for {country} is not available"
+                "error": "Data not available",
+                "confidence": "low"
             }), 404
-        
-        # Calculate confidence
-        confidence_info = calculate_confidence(country, visa_info, visa_type_specified)
-        
-        # Generate answer
-        answer = generate_answer(
-            query, country, visa_info, visa_type, 
-            is_pakistani, confidence_info
-        )
-        
-        # Get visa-specific data
-        visa_types = visa_info.get('visa_types', {})
-        display_visa = visa_types.get(visa_type, {}) if visa_type != "unknown" else {}
-        
-        # Build response with REAL sources (no fake sources)
-        response_data = {
-            "direct_answer": answer,
-            "country": visa_info.get("country", country.upper()),
-            "country_code": country,
+
+        visa_types = visa_info.get("visa_types", {})
+        specific_visa = visa_types.get(visa_type)
+
+        if not specific_visa:
+            return jsonify({
+                "error": f"{visa_type} visa data not available for {country}",
+                "confidence": "low"
+            }), 404
+
+        # Build CLEAN response (NO DUPLICATION)
+        response = {
+            "country": visa_info.get("country"),
             "visa_type": visa_type,
-            "visa_type_specified": visa_type_specified,
-            "requirements": display_visa.get('requirements', []),
-            "processing_time_note": display_visa.get('processing_time_note', 'Contact embassy'),
-            "fees": display_visa.get('fees', 'Contact embassy'),
-            "validity_note": display_visa.get('validity_note', 'Varies'),
-            "confidence": confidence_info,
-            "sources": OFFICIAL_SOURCES.get(country, []),  # REAL sources only
-            "is_pakistani": is_pakistani,
-            "timestamp": datetime.now().isoformat(),
-            "disclaimer": "Visa approval is not guaranteed. Always verify with official sources."
+            "requirements": specific_visa.get("requirements", []),
+            "processing_time_note": specific_visa.get("processing_time_note", "Varies by embassy"),
+            "fees": specific_visa.get("fees", "Check official website"),
+            "validity_note": specific_visa.get("validity_note", "Varies"),
+            "sources": OFFICIAL_SOURCES.get(country, []),
+            "last_updated": visa_info.get("last_updated"),
+            "confidence": "high" if visa_info.get("source_type") == "scraped" else "medium"
         }
-        
-        # Cache the response
-        response_cache[cache_key] = {
-            'data': response_data,
-            'timestamp': datetime.now()
-        }
-        
-        print(f"✅ Processed query for {country} (visa_type: {visa_type})", flush=True)
-        return jsonify(response_data)
-        
+
+        return jsonify(response)
+
     except Exception as e:
-        print(f"❌ Error: {e}", flush=True)
         return jsonify({
-            "error": "Internal server error",
-            "message": str(e)
+            "error": "Internal server error"
         }), 500
 
 @app.route("/api/countries", methods=["GET"])
@@ -888,6 +875,17 @@ def ratelimit_handler(e):
         "error": "Rate limit exceeded",
         "message": "10 requests per minute limit"
     }), 429
+
+def clean_cache():
+    now = datetime.now()
+    keys_to_delete = []
+
+    for key, value in response_cache.items():
+        if (now - value['timestamp']).seconds > CACHE_TIMEOUT:
+            keys_to_delete.append(key)
+
+    for key in keys_to_delete:
+        del response_cache[key]
 
 # ============================================
 # MAIN
