@@ -518,13 +518,34 @@ def validate_input(query):
 
 
 def detect_country(query):
-    """Detect which country is being asked about"""
+    """Detect which country is being asked about - prioritized by match quality"""
     query_lower = query.lower()
-    detected_countries = []
+    
+    # Track matches with their priority
+    matches = []
+    
     for country, keywords in COUNTRY_KEYWORDS.items():
-        if any(keyword in query_lower for keyword in keywords):
-            detected_countries.append(country)
-    return detected_countries[0] if detected_countries else None
+        for keyword in keywords:
+            if keyword in query_lower:
+                # Calculate match score:
+                # - Exact word match gets higher score
+                # - Longer keyword gets higher score
+                score = len(keyword)
+                
+                # Bonus for exact word boundary match
+                if f" {keyword} " in f" {query_lower} " or query_lower.startswith(keyword) or query_lower.endswith(keyword):
+                    score += 100
+                
+                matches.append((country, score, keyword))
+    
+    if not matches:
+        return None
+    
+    # Sort by score (highest first), then by keyword length
+    matches.sort(key=lambda x: (x[1], len(x[2])), reverse=True)
+    
+    print(f"🔍 Country detection: {matches[:3]}")  # Debug output
+    return matches[0][0]
 
 
 def detect_visa_type(query):
