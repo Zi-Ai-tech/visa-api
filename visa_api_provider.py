@@ -133,52 +133,89 @@ class VisaAPIProvider:
     def _format_v2_response(self, api_response: Dict, destination: str, nationality: str) -> Dict:
         """Format v2 API response"""
         data = api_response.get('data', api_response)
-        
+    
         dest_info = data.get('destination', {})
         passport_info = data.get('passport', {})
         visa_rules = data.get('visa_rules', {})
         primary_rule = visa_rules.get('primary_rule', {})
         secondary_rule = visa_rules.get('secondary_rule', {})
         mandatory_reg = data.get('mandatory_registration', {})
-        
+    
         # Determine the best requirement description
         requirement = primary_rule.get('name', 'unknown')
         if secondary_rule and secondary_rule.get('name'):
             requirement = f"{requirement} or {secondary_rule.get('name')}"
-        
+    
         # Build description
         description_parts = []
         if primary_rule.get('duration'):
             description_parts.append(f"Duration: {primary_rule.get('duration')}")
         if mandatory_reg and mandatory_reg.get('name'):
             description_parts.append(f"Required: {mandatory_reg.get('name')}")
-        
+    
         description = "; ".join(description_parts) if description_parts else requirement
-        
+    
+        # ✅ FIX: Use the destination we requested, not what API returned
+        # The API sometimes returns passport info in the destination field
+        requested_dest_name = self._get_country_name_from_code(destination)
+    
+        # Check if API returned passport country as destination (common bug)
+        api_dest_name = dest_info.get('name', '')
+        passport_name = passport_info.get('name', '')
+    
+        # If API destination matches passport, it's wrong - use our requested destination
+        if api_dest_name and api_dest_name.lower() == passport_name.lower():
+            final_dest_name = requested_dest_name
+            final_dest_code = destination.upper()
+        else:
+            final_dest_name = api_dest_name if api_dest_name else requested_dest_name
+            final_dest_code = dest_info.get('code', destination.upper())
+    
         return {
             'destination': {
-                'code': dest_info.get('code', destination),
-                'name': dest_info.get('name', destination),
-                'continent': dest_info.get('continent', 'Unknown'),
-                'capital': dest_info.get('capital', 'Unknown'),
-                'currency': dest_info.get('currency', 'Unknown')
-            },
-            'passport': {
-                'code': passport_info.get('code', nationality),
-                'name': passport_info.get('name', nationality),
-                'currency_code': passport_info.get('currency_code', '')
-            },
-            'requirement': requirement,
-            'description': description,
-            'primary_rule': primary_rule,
-            'secondary_rule': secondary_rule,
-            'mandatory_registration': mandatory_reg,
-            'passport_validity': dest_info.get('passport_validity', '6 months recommended'),
-            'embassy_url': dest_info.get('embassy_url', ''),
-            'last_updated': datetime.now().isoformat(),
-            'source': 'Travel Buddy API v2',
-            'confidence': 'high'
+            'code': final_dest_code,
+            'name': final_dest_name,
+            'continent': dest_info.get('continent', 'Unknown'),
+            'capital': dest_info.get('capital', 'Unknown'),
+            'currency': dest_info.get('currency', 'Unknown')
+        },
+        'passport': {
+            'code': passport_info.get('code', nationality),
+            'name': passport_info.get('name', nationality),
+            'currency_code': passport_info.get('currency_code', '')
+        },
+        'requirement': requirement,
+        'description': description,
+        'primary_rule': primary_rule,
+        'secondary_rule': secondary_rule,
+        'mandatory_registration': mandatory_reg,
+        'passport_validity': dest_info.get('passport_validity', '6 months recommended'),
+        'embassy_url': dest_info.get('embassy_url', ''),
+        'last_updated': datetime.now().isoformat(),
+        'source': 'Travel Buddy API v2',
+        'confidence': 'high'
+    }
+
+    def _get_country_name_from_code(self, code: str) -> str:
+        """Convert country code to proper name"""
+        country_names = {
+            'BR': 'Brazil', 'US': 'United States', 'GB': 'United Kingdom',
+            'CA': 'Canada', 'AU': 'Australia', 'JP': 'Japan',
+            'CN': 'China', 'IN': 'India', 'AE': 'UAE', 'DE': 'Germany',
+            'FR': 'France', 'IT': 'Italy', 'ES': 'Spain', 'PT': 'Portugal',
+            'NL': 'Netherlands', 'SE': 'Sweden', 'NO': 'Norway', 'DK': 'Denmark',
+            'FI': 'Finland', 'IE': 'Ireland', 'CH': 'Switzerland', 'AT': 'Austria',
+            'BE': 'Belgium', 'GR': 'Greece', 'PL': 'Poland', 'CZ': 'Czech Republic',
+            'HU': 'Hungary', 'TR': 'Turkey', 'SA': 'Saudi Arabia', 'QA': 'Qatar',
+            'KW': 'Kuwait', 'BH': 'Bahrain', 'OM': 'Oman', 'EG': 'Egypt',
+            'ZA': 'South Africa', 'NG': 'Nigeria', 'KE': 'Kenya',
+            'MX': 'Mexico', 'AR': 'Argentina', 'CL': 'Chile', 'PE': 'Peru',
+            'CO': 'Colombia', 'VE': 'Venezuela', 'SG': 'Singapore', 'MY': 'Malaysia',
+            'TH': 'Thailand', 'VN': 'Vietnam', 'ID': 'Indonesia', 'PH': 'Philippines',
+            'KR': 'South Korea', 'PK': 'Pakistan', 'NZ': 'New Zealand',
+            'RU': 'Russia', 'UA': 'Ukraine'
         }
+        return country_names.get(code.upper(), code.upper())
     
     def _get_fallback_response(self, destination: str, nationality: str) -> Dict:
         return {
