@@ -507,6 +507,95 @@ COUNTRY_KEYWORDS = {
 # HELPER FUNCTIONS
 # ============================================
 
+def detect_specific_question(query, country, visa_type):
+    """Detect if user is asking about specific requirements like IELTS, fees, etc."""
+    query_lower = query.lower()
+    
+    specific_info = None
+    
+    # IELTS / English proficiency
+    if any(word in query_lower for word in ["ielts", "english", "language", "toefl"]):
+        if country == "uk" and visa_type == "student":
+            specific_info = {
+                "type": "ielts",
+                "title": "📚 IELTS Requirements for UK Student Visa",
+                "content": [
+                    "✅ IELTS for UKVI (Academic) is MANDATORY for Pakistani students",
+                    "❌ Regular IELTS (Academic) is NOT accepted",
+                    "📊 Minimum score: 5.5-6.5 depending on course level",
+                    "🎓 Degree-level courses: Usually 6.0-6.5 required",
+                    "📝 Below degree level: Minimum 5.5 in all components",
+                    "⚠️ Some universities may require higher scores",
+                    "🔄 Alternative: TOEFL iBT, PTE Academic, or Cambridge English"
+                ]
+            }
+        elif country == "us" and visa_type == "student":
+            specific_info = {
+                "type": "ielts",
+                "title": "📚 English Requirements for US Student Visa (F-1)",
+                "content": [
+                    "✅ English proficiency required by most institutions",
+                    "📊 IELTS: Typically 6.0-7.0 overall",
+                    "📊 TOEFL iBT: Usually 70-100",
+                    "🎓 Requirements vary by university - check with your institution",
+                    "📝 Some schools offer conditional admission with English programs"
+                ]
+            }
+        elif country == "canada" and visa_type == "student":
+            specific_info = {
+                "type": "ielts",
+                "title": "📚 IELTS Requirements for Canada Study Permit",
+                "content": [
+                    "✅ IELTS Academic required for most institutions",
+                    "📊 Overall 6.0-6.5 typically required",
+                    "📝 Minimum 5.5-6.0 in each band",
+                    "🎓 SDS (Student Direct Stream) requires IELTS 6.0 overall",
+                    "🔄 Also accepted: TOEFL, PTE, CAEL, Duolingo (varies by school)"
+                ]
+            }
+        elif country == "australia" and visa_type == "student":
+            specific_info = {
+                "type": "ielts",
+                "title": "📚 IELTS Requirements for Australian Student Visa",
+                "content": [
+                    "✅ IELTS Academic required",
+                    "📊 Minimum overall: 5.5-6.5 depending on course",
+                    "🎓 University: Usually 6.5 overall, minimum 6.0 in each band",
+                    "📝 Vocational: Usually 5.5 overall, minimum 5.0 in each band",
+                    "🔄 Also accepted: TOEFL iBT, PTE Academic, CAE"
+                ]
+            }
+        else:
+            specific_info = {
+                "type": "ielts",
+                "title": f"📚 English Requirements for {country.upper()} Student Visa",
+                "content": [
+                    "✅ English proficiency typically required for student visas",
+                    "📋 Requirements vary by institution and course level",
+                    "🔍 Check with your specific university for exact requirements"
+                ]
+            }
+    
+    # Fees specific question
+    elif any(word in query_lower for word in ["fee", "cost", "price", "charge", "how much"]):
+        fee_info = generate_fees_from_api({}, country, visa_type)
+        specific_info = {
+            "type": "fees",
+            "title": f"💰 Visa Fees for {country.upper()} {visa_type.title()} Visa",
+            "content": [f"📊 Current fee: {fee_info}"]
+        }
+    
+    # Processing time specific question
+    elif any(word in query_lower for word in ["processing", "how long", "wait time", "appointment"]):
+        time_info = generate_processing_time({}, country)
+        specific_info = {
+            "type": "processing",
+            "title": f"⏱️ Processing Time for {country.upper()} Visa",
+            "content": [f"📊 {time_info}"]
+        }
+    
+    return specific_info
+
 def validate_input(query):
     if not query or not isinstance(query, str) or len(query) > 500:
         return False, "Invalid input"
