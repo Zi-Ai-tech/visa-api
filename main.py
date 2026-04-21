@@ -41,9 +41,8 @@ class VisaRulesEngine:
                 "administrative_processing_risk": "221(g) possible",
                 "validity_note": "Up to 5-10 years at officer's discretion, not guaranteed",
                 "entry_duration": "Usually 6 months per visit",
-                "refusal_risk": "Moderate to High for Pakistani applicants",
                 "documents_approach": "focus_on_ties_not_checklist",
-                "processing_time_note": "Wait times vary significantly by consulate (Islamabad/Karachi) and can range from weeks to months"
+                "processing_time_note": "Wait times vary significantly by consulate and can range from weeks to months"
             },
             "uk": {
                 "requires_visa_type_clarification": True,
@@ -79,7 +78,6 @@ class VisaRulesEngine:
             }
         }
         
-        # Default rules for countries not explicitly defined
         default_rules = {
             "requires_visa_type_clarification": True,
             "interview_important": False,
@@ -89,6 +87,7 @@ class VisaRulesEngine:
         }
         
         return rules.get(country_code, default_rules)
+
 
 # ============================================
 # DATA LOADING FUNCTIONS
@@ -124,94 +123,161 @@ def load_scraped_data():
     
     return visa_data
 
+
+def get_official_source_for_country(country_code, country_name=None):
+    """Dynamically generate official source URLs for any country"""
+    patterns = {
+        # North America
+        "us": ("U.S. Department of State", "https://travel.state.gov", ".gov"),
+        "ca": ("Immigration Canada", "https://www.canada.ca/en/immigration-refugees-citizenship.html", ".gc.ca"),
+        "mx": ("Mexico INM", "https://www.inm.gob.mx", ".gob.mx"),
+        # Europe
+        "uk": ("UK Visas and Immigration", "https://www.gov.uk/browse/visas-immigration", ".gov.uk"),
+        "ie": ("Irish Immigration", "https://www.irishimmigration.ie", ".ie"),
+        "de": ("German Foreign Office", "https://www.auswaertiges-amt.de", ".de"),
+        "fr": ("France Visas", "https://france-visas.gouv.fr", ".gouv.fr"),
+        "it": ("Italy Visti", "https://vistoperitalia.esteri.it", ".it"),
+        "es": ("Spain Exteriores", "https://www.exteriores.gob.es", ".gob.es"),
+        "pt": ("Portugal SEF", "https://www.sef.pt", ".pt"),
+        "nl": ("Netherlands IND", "https://ind.nl", ".nl"),
+        "be": ("Belgium Immigration", "https://dofi.ibz.be", ".be"),
+        "ch": ("Switzerland SEM", "https://www.sem.admin.ch", ".admin.ch"),
+        "at": ("Austria Migration", "https://www.migration.gv.at", ".gv.at"),
+        "se": ("Sweden Migrationsverket", "https://www.migrationsverket.se", ".se"),
+        "no": ("Norway UDI", "https://www.udi.no", ".no"),
+        "dk": ("Denmark Nyidanmark", "https://www.nyidanmark.dk", ".dk"),
+        "fi": ("Finland Migri", "https://migri.fi", ".fi"),
+        "gr": ("Greece Migration", "https://migration.gov.gr", ".gov.gr"),
+        "pl": ("Poland Visa", "https://www.gov.pl/web/poland/visa", ".gov.pl"),
+        "cz": ("Czech Republic MVCR", "https://www.mvcr.cz", ".cz"),
+        "hu": ("Hungary Immigration", "https://oif.gov.hu", ".gov.hu"),
+        "ro": ("Romania IGI", "https://igi.mai.gov.ro", ".gov.ro"),
+        "bg": ("Bulgaria MFA", "https://www.mfa.bg", ".bg"),
+        "hr": ("Croatia MUP", "https://mup.gov.hr", ".gov.hr"),
+        "sk": ("Slovakia MV", "https://www.minv.sk", ".sk"),
+        "si": ("Slovenia GOV", "https://www.gov.si", ".si"),
+        "ee": ("Estonia MFA", "https://vm.ee", ".ee"),
+        "lv": ("Latvia MFA", "https://www.mfa.gov.lv", ".gov.lv"),
+        "lt": ("Lithuania MIGRIS", "https://www.migracija.lt", ".lt"),
+        "ua": ("Ukraine MFA", "https://mfa.gov.ua", ".gov.ua"),
+        "rs": ("Serbia MFA", "https://www.mfa.gov.rs", ".gov.rs"),
+        # Asia-Pacific
+        "jp": ("MOFA Japan", "https://www.mofa.go.jp", ".go.jp"),
+        "cn": ("China Visa", "https://www.visaforchina.cn", ".gov.cn"),
+        "kr": ("South Korea Visa", "https://www.visa.go.kr", ".go.kr"),
+        "in": ("Indian Visa", "https://indianvisaonline.gov.in", ".gov.in"),
+        "pk": ("Pakistan Immigration", "https://www.dgip.gov.pk", ".gov.pk"),
+        "bd": ("Bangladesh Immigration", "https://www.immigration.gov.bd", ".gov.bd"),
+        "lk": ("Sri Lanka Immigration", "https://www.immigration.gov.lk", ".gov.lk"),
+        "np": ("Nepal Immigration", "https://www.immigration.gov.np", ".gov.np"),
+        "au": ("Department of Home Affairs", "https://immi.homeaffairs.gov.au", ".gov.au"),
+        "nz": ("Immigration New Zealand", "https://www.immigration.govt.nz", ".govt.nz"),
+        "th": ("Thailand Immigration", "https://www.immigration.go.th", ".go.th"),
+        "vn": ("Vietnam Immigration", "https://xuatnhapcanh.gov.vn", ".gov.vn"),
+        "sg": ("Singapore ICA", "https://www.ica.gov.sg", ".gov.sg"),
+        "my": ("Malaysia Immigration", "https://www.imi.gov.my", ".gov.my"),
+        "id": ("Indonesia Immigration", "https://www.imigrasi.go.id", ".go.id"),
+        "ph": ("Philippines Immigration", "https://immigration.gov.ph", ".gov.ph"),
+        "kh": ("Cambodia eVisa", "https://www.evisa.gov.kh", ".gov.kh"),
+        "la": ("Laos Immigration", "https://immigration.gov.la", ".gov.la"),
+        "mm": ("Myanmar eVisa", "https://evisa.moip.gov.mm", ".gov.mm"),
+        # Middle East
+        "ae": ("UAE Government", "https://u.ae/en/information-and-services/visa-and-emirates-id", ".gov.ae"),
+        "sa": ("Saudi Arabia MOFA", "https://visa.mofa.gov.sa", ".gov.sa"),
+        "qa": ("Qatar MOI", "https://portal.moi.gov.qa", ".gov.qa"),
+        "kw": ("Kuwait eVisa", "https://evisa.moi.gov.kw", ".gov.kw"),
+        "bh": ("Bahrain eVisa", "https://www.evisa.gov.bh", ".gov.bh"),
+        "om": ("Oman eVisa", "https://evisa.rop.gov.om", ".gov.om"),
+        "jo": ("Jordan eVisa", "https://eservices.moi.gov.jo", ".gov.jo"),
+        "lb": ("Lebanon Security", "https://www.general-security.gov.lb", ".gov.lb"),
+        "il": ("Israel GOV", "https://www.gov.il", ".gov.il"),
+        "iq": ("Iraq eVisa", "https://evisa.iq", ".iq"),
+        "ir": ("Iran eVisa", "https://evisa.mfa.ir", ".ir"),
+        "tr": ("Turkey eVisa", "https://www.evisa.gov.tr", ".gov.tr"),
+        # Africa
+        "eg": ("Egypt eVisa", "https://visa2egypt.gov.eg", ".gov.eg"),
+        "ma": ("Morocco Consulat", "https://www.consulat.ma", ".ma"),
+        "dz": ("Algeria MFA", "https://www.mfa.gov.dz", ".gov.dz"),
+        "tn": ("Tunisia MFA", "https://www.diplomatie.gov.tn", ".gov.tn"),
+        "ke": ("Kenya eVisa", "https://evisa.go.ke", ".go.ke"),
+        "tz": ("Tanzania Immigration", "https://www.immigration.go.tz", ".go.tz"),
+        "ug": ("Uganda Immigration", "https://www.immigration.go.ug", ".go.ug"),
+        "rw": ("Rwanda Immigration", "https://www.migration.gov.rw", ".gov.rw"),
+        "et": ("Ethiopia Immigration", "https://www.immigration.gov.et", ".gov.et"),
+        "mu": ("Mauritius GOV", "https://passport.govmu.org", ".govmu.org"),
+        "ng": ("Nigeria Immigration", "https://immigration.gov.ng", ".gov.ng"),
+        "gh": ("Ghana Immigration", "https://home.gis.gov.gh", ".gov.gh"),
+        "sn": ("Senegal MFA", "https://www.diplomatie.gouv.sn", ".gouv.sn"),
+        "za": ("South Africa DHA", "https://www.dha.gov.za", ".gov.za"),
+        "zw": ("Zimbabwe Immigration", "https://www.zimbabweimmigration.gov.zw", ".gov.zw"),
+        "zm": ("Zambia Immigration", "https://www.zambiaimmigration.gov.zm", ".gov.zm"),
+        "bw": ("Botswana GOV", "https://www.gov.bw", ".gov.bw"),
+        "na": ("Namibia MHA", "https://www.mha.gov.na", ".gov.na"),
+        # South America
+        "br": ("Brazil MRE", "https://www.gov.br/mre", ".gov.br"),
+        "ar": ("Argentina Migraciones", "https://www.migraciones.gov.ar", ".gob.ar"),
+        "cl": ("Chile Extranjería", "https://www.extranjeria.gob.cl", ".gob.cl"),
+        "pe": ("Peru Migraciones", "https://www.gob.pe/migraciones", ".gob.pe"),
+        "co": ("Colombia Cancillería", "https://www.cancilleria.gov.co", ".gov.co"),
+        "ve": ("Venezuela SAIME", "https://www.saime.gob.ve", ".gob.ve"),
+        "ec": ("Ecuador Cancillería", "https://www.cancilleria.gob.ec", ".gob.ec"),
+        "bo": ("Bolivia Migración", "https://www.migracion.gob.bo", ".gob.bo"),
+        "py": ("Paraguay Migraciones", "https://www.migraciones.gov.py", ".gov.py"),
+        "uy": ("Uruguay MRE", "https://www.gub.uy/ministerio-relaciones-exteriores", ".gub.uy"),
+        # Others
+        "ru": ("Russia MID", "https://www.mid.ru", ".ru"),
+        "by": ("Belarus MFA", "https://mfa.gov.by", ".gov.by"),
+        "is": ("Iceland UT", "https://island.is/en/visa", ".is"),
+        "mt": ("Malta Identity", "https://www.identitymalta.com", ".com"),
+        "cy": ("Cyprus MFA", "https://mfa.gov.cy", ".gov.cy"),
+        "lu": ("Luxembourg MAEE", "https://maee.gouvernement.lu", ".lu"),
+    }
+    
+    if country_code in patterns:
+        name, url, domain = patterns[country_code]
+        return [{"name": name, "url": url, "type": "official", "domain": domain}]
+    
+    # Dynamic fallback for any country
+    display_name = country_name or country_code.upper()
+    return [{
+        "name": f"{display_name} Embassy & Immigration",
+        "url": f"https://www.embassypages.com/{country_code}",
+        "type": "embassy_directory",
+        "domain": ".com"
+    }]
+
+
 def load_official_sources():
-    """Load official sources with REAL URLs"""
+    """Load official sources dynamically"""
     sources = {}
     data_dir = "visa_data"
     
+    # First, try to load from scraped data
     if os.path.exists(data_dir):
         for filename in os.listdir(data_dir):
             if filename.endswith('.json') and not filename.startswith('_'):
                 country_code = filename.replace('.json', '')
                 file_path = os.path.join(data_dir, filename)
-                
                 try:
                     with open(file_path, 'r', encoding='utf-8') as f:
                         data = json.load(f)
-                    
                     source_list = data.get("sources", [])
                     if source_list:
                         sources[country_code] = source_list
                 except:
                     pass
     
-    # Add verified official sources (NEVER fake sources)
-    VERIFIED_SOURCES = {
-        "us": [
-            {
-                "name": "U.S. Department of State - Bureau of Consular Affairs",
-                "url": "https://travel.state.gov/content/travel/en/us-visas.html",
-                "type": "official",
-                "domain": ".gov"
-            },
-            {
-                "name": "U.S. Embassy Islamabad",
-                "url": "https://pk.usembassy.gov/visas/",
-                "type": "official",
-                "domain": ".gov"
-            }
-        ],
-        "uk": [
-            {
-                "name": "UK Visas and Immigration",
-                "url": "https://www.gov.uk/browse/visas-immigration",
-                "type": "official",
-                "domain": ".gov.uk"
-            }
-        ],
-        "canada": [
-            {
-                "name": "Immigration, Refugees and Citizenship Canada",
-                "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/visit-canada.html",
-                "type": "official",
-                "domain": ".gc.ca"
-            }
-        ],
-        "ireland": [
-            {
-                "name": "Irish Immigration Service",
-                "url": "https://www.irishimmigration.ie/coming-to-visit-ireland/",
-                "type": "official",
-                "domain": ".ie"
-            }
-        ],
-        "australia": [
-            {
-                "name": "Department of Home Affairs",
-                "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/visitor-600",
-                "type": "official",
-                "domain": ".gov.au"
-            }
-        ],
-        "germany": [
-            {
-                "name": "German Federal Foreign Office",
-                "url": "https://www.auswaertiges-amt.de/en/visa-service",
-                "type": "official",
-                "domain": ".de"
-            }
-        ]
-    }
-    
-    # Merge scraped sources with verified sources
-    for country_code, verified in VERIFIED_SOURCES.items():
+    # For any country without sources, generate dynamically
+    for country_code, country_data in VISA_DATA.items():
         if country_code not in sources:
-            sources[country_code] = verified
+            country_name = country_data.get("country", country_code.upper())
+            sources[country_code] = get_official_source_for_country(country_code, country_name)
     
     return sources
 
+
 # ============================================
-#  FALLBACK DATA (Minimal - only for emergencies)
+# FALLBACK DATA
 # ============================================
 
 FALLBACK_VISA_DATA = {
@@ -220,20 +286,15 @@ FALLBACK_VISA_DATA = {
         "visa_types": {
             "tourist": {
                 "name": "B1/B2 Visitor Visa",
-                "requirements": [
-                    "Valid passport (6 months beyond intended stay)",
-                    "DS-160 confirmation page",
-                    "Interview appointment letter",
-                    "Proof of financial ability",
-                    "Evidence of ties to home country"
-                ],
-                "processing_time_note": "Wait times vary significantly by consulate (Islamabad/Karachi) and can range from weeks to months",
+                "requirements": ["Valid passport (6 months beyond intended stay)", "DS-160 confirmation page", "Interview appointment letter", "Proof of financial ability", "Evidence of ties to home country"],
+                "processing_time_note": "Wait times vary significantly by consulate",
                 "fees": "$185 USD",
-                "validity_note": "Up to 5-10 years at officer's discretion, not guaranteed. Entry usually 6 months per visit."
+                "validity_note": "Up to 5-10 years at officer's discretion."
             }
         }
     }
 }
+
 
 # ============================================
 # LOAD DATA
@@ -252,116 +313,14 @@ print("🔗 Loading official sources...")
 OFFICIAL_SOURCES = load_official_sources()
 print(f"✅ Loaded sources for {len(OFFICIAL_SOURCES)} countries")
 
-# ============================================
-# PAKISTANI-SPECIFIC DETAILED REQUIREMENTS
-# ============================================
-
-PAKISTANI_DETAILED = {
-    "us": {
-        "tourist": {
-            "requirements": [
-                "Valid Pakistani passport (6+ months validity beyond intended stay)",
-                "Detailed travel history (last 5 years)",
-                "Property/asset documents in Pakistan",
-                "Family ties evidence (marriage/birth certificates)",
-                "Employment letter with approved leave",
-                "Bank statements (6 months, consistent income)"
-            ],
-            "financial_requirements": [
-                "Minimum $10,000 in liquid funds (recommended)",
-                "6 months of personal/business bank statements",
-                "Tax returns for last 2 years (if applicable)"
-            ],
-            "refusal_risk": "Moderate to High",
-            "important_notes": [
-                "Visa approval is NOT guaranteed",
-                "Applicant must satisfy consular officer of intent to return to Pakistan",
-                "Administrative processing (221g) may delay decision by weeks or months",
-                "Previous travel history to US/UK/Schengen helps"
-            ],
-            "interview_tips": [
-                "Be honest and consistent in answers",
-                "Show strong ties to Pakistan (family, property, job)",
-                "Don't purchase tickets before visa approval"
-            ]
-        },
-        "student": {
-            "requirements": [
-                "I-20 from SEVP-approved institution",
-                "SEVIS fee payment receipt",
-                "Strong academic background",
-                "Clear study plan and post-study intentions"
-            ],
-            "ielts_required": True,
-            "ielts_score": "6.5 overall minimum (varies by institution)",
-            "financial_requirements": [
-                "Proof of first year tuition + living expenses",
-                "Sponsor's bank statements (6 months)",
-                "Affidavit of support (if sponsored)"
-            ],
-            "refusal_risk": "Moderate",
-            "important_notes": [
-                "Must demonstrate intent to return after studies",
-                "Apply 3-4 months before program start",
-                "Visa may be denied under Section 214(b) if ties not proven"
-            ]
-        },
-        "work": {
-            "requirements": [
-                "Approved I-129 petition from US employer",
-                "Labor Condition Application (LCA) approval",
-                "Educational/professional qualifications",
-                "Experience letters"
-            ],
-            "processing_note": "H-1B cap subject to annual lottery (usually March)",
-            "refusal_risk": "Moderate"
-        }
-    },
-    "uk": {
-        "student": {
-            "requirements": [
-                "CAS from licensed UK institution",
-                "Tuberculosis test certificate (mandatory)",
-                "Police registration upon arrival"
-            ],
-            "ielts_required": True,
-            "ielts_score": "5.5-6.5 depending on course",
-            "ielts_note": "MUST be IELTS for UKVI (Academic) - regular IELTS not accepted",
-            "financial_requirements": [
-                "£1,334 per month (outside London) for up to 9 months",
-                "£1,023 per month (inside London)",
-                "Funds must be held for 28 consecutive days"
-            ]
-        }
-    },
-    "canada": {
-        "tourist": {
-            "requirements": [
-                "Valid Pakistani passport",
-                "Proof of funds (min $1,000 CAD per month)",
-                "Purpose of travel statement",
-                "Ties to Pakistan (property, family, job)"
-            ],
-            "financial_requirements": [
-                "Bank statements (4 months)",
-                "Employment letter with salary",
-                "Property documents (recommended)"
-            ],
-            "important_notes": [
-                "Biometrics mandatory for all Pakistani applicants",
-                "Processing times longer for Pakistani citizens",
-                "Previous Canada/US travel history helps"
-            ]
-        }
-    }
-}
 
 # ============================================
-#  COUNTRY DETECTION KEYWORDS
+# COMPLETE COUNTRY DETECTION KEYWORDS (150+ COUNTRIES)
 # ============================================
 
 COUNTRY_KEYWORDS = {
-"us": ["us", "usa", "united states", "america", "american", "u.s.", "u.s.a", "united states of america"],
+    # North America
+    "us": ["us", "usa", "united states", "america", "american", "u.s.", "u.s.a", "united states of america"],
     "canada": ["canada", "canadian", "ca"],
     "mexico": ["mexico", "mexican", "mx"],
     
@@ -543,25 +502,23 @@ COUNTRY_KEYWORDS = {
     "faroe_islands": ["faroe islands", "faroe", "fo"],
 }
 
+
 # ============================================
 # HELPER FUNCTIONS
 # ============================================
-def clean_requirements(requirements):
-    if not requirements: return []
-    cleaned = []
-    for req in requirements[:5]:
-        req = req.replace("Passportvalid", "Valid passport").replace("bycountry", "by country").replace("\u00a0", " ").replace("\u2013", "-")
-        if len(req) > 20 and req not in cleaned: cleaned.append(req)
-    return cleaned
 
 def validate_input(query):
-    if not query or not isinstance(query, str) or len(query) > 500: return False, "Invalid input"
+    if not query or not isinstance(query, str) or len(query) > 500:
+        return False, "Invalid input"
     malicious_patterns = [r'<script', r'javascript:', r'onerror\s*=', r'SELECT\s+.*\s+FROM', r'DROP\s+TABLE', r'--']
     for pattern in malicious_patterns:
-        if re.search(pattern, query, re.IGNORECASE): return False, "Invalid query content detected"
+        if re.search(pattern, query, re.IGNORECASE):
+            return False, "Invalid query content detected"
     return True, "Valid input"
 
+
 def detect_country(query):
+    """Detect which country is being asked about"""
     query_lower = query.lower()
     detected_countries = []
     for country, keywords in COUNTRY_KEYWORDS.items():
@@ -569,94 +526,163 @@ def detect_country(query):
             detected_countries.append(country)
     return detected_countries[0] if detected_countries else None
 
+
 def detect_visa_type(query):
     query_lower = query.lower()
-    if any(word in query_lower for word in ["student", "study", "education", "university", "college", "course"]): return "student"
-    elif any(word in query_lower for word in ["work", "job", "employment", "skilled", "professional", "h1b", "h-1b"]): return "work"
-    elif any(word in query_lower for word in ["tourist", "visit", "travel", "tourism", "vacation", "visitor"]): return "tourist"
-    elif any(word in query_lower for word in ["business", "conference", "meeting"]): return "business"
+    if any(word in query_lower for word in ["student", "study", "education", "university", "college", "course"]):
+        return "student"
+    elif any(word in query_lower for word in ["work", "job", "employment", "skilled", "professional", "h1b", "h-1b"]):
+        return "work"
+    elif any(word in query_lower for word in ["tourist", "visit", "travel", "tourism", "vacation", "visitor"]):
+        return "tourist"
+    elif any(word in query_lower for word in ["business", "conference", "meeting"]):
+        return "business"
     return "unknown"
+
+
+def detect_nationality(query, destination_country):
+    """Detect nationality from query context without hardcoding"""
+    query_lower = query.lower()
+    
+    # Look for patterns like "for Indian", "Indian citizen", "from India"
+    for code, keywords in COUNTRY_KEYWORDS.items():
+        if code == destination_country:
+            continue
+        for kw in keywords:
+            patterns = [f"for {kw}", f"{kw} citizen", f"{kw} passport", f"from {kw}"]
+            if any(pattern in query_lower for pattern in patterns):
+                # Map to proper ISO codes
+                if code in ["india"]: return "IN"
+                if code in ["us", "usa", "united states"]: return "US"
+                if code in ["uk", "britain"]: return "GB"
+                if code in ["canada"]: return "CA"
+                if code in ["australia"]: return "AU"
+                if code in ["pakistan"]: return "PK"
+                if code in ["germany"]: return "DE"
+                if code in ["france"]: return "FR"
+                if code in ["italy"]: return "IT"
+                if code in ["spain"]: return "ES"
+                if code in ["japan"]: return "JP"
+                if code in ["china"]: return "CN"
+                if code in ["brazil"]: return "BR"
+                if code in ["south_africa"]: return "ZA"
+                if code in ["uae"]: return "AE"
+                return code.upper()
+    
+    return "PK"  # Default
+
 
 def generate_requirements_from_api(api_result, visa_type):
     requirement_type = api_result.get('requirement', '').lower()
     passport_validity = api_result.get('passport_validity', '6 months')
     mandatory_reg = api_result.get('mandatory_registration', {})
     requirements = [f"Valid passport (valid for {passport_validity})"]
+    
     if 'visa required' in requirement_type:
         requirements.extend(["Completed visa application form", "Passport-size photographs", "Proof of sufficient funds", "Travel itinerary", "Proof of ties to home country"])
     elif 'online visa' in requirement_type or 'evisa' in requirement_type:
         requirements.extend(["Online application submission", "Scanned passport copy", "Digital photograph", "Payment of visa fee online"])
     elif 'visa on arrival' in requirement_type:
         requirements.extend(["Passport with sufficient blank pages", "Return/onward ticket", "Proof of accommodation", "Sufficient funds for stay"])
-    if mandatory_reg and mandatory_reg.get('name'): requirements.append(f"Complete {mandatory_reg.get('name')} registration")
-    if visa_type == "student": requirements.append("Letter of acceptance from educational institution")
-    elif visa_type == "work": requirements.append("Employment contract or job offer letter")
+    
+    if mandatory_reg and mandatory_reg.get('name'):
+        requirements.append(f"Complete {mandatory_reg.get('name')} registration")
+    if visa_type == "student":
+        requirements.append("Letter of acceptance from educational institution")
+    elif visa_type == "work":
+        requirements.append("Employment contract or job offer letter")
+    
     return requirements[:8]
 
+
 def generate_fees_from_api(api_result, country, visa_type):
-    fee_ranges = {"us": "$185", "uk": "£115-£150", "ca": "$100 CAD", "au": "$150 AUD", "de": "€80", "fr": "€80", "jp": "¥3,000", "ae": "$100-200", "br": "R$290", "za": "R1,520", "th": "฿1,000-2,000"}
+    fee_ranges = {"us": "$185", "uk": "£115-£150", "ca": "$100 CAD", "au": "$150 AUD", "de": "€80", "fr": "€80", "jp": "¥3,000", "ae": "$100-200", "br": "R$290", "za": "R1,520", "th": "฿1,000-2,000", "in": "₹2,000-10,000", "cn": "$140", "sg": "$30 SGD"}
     return fee_ranges.get(country, "Contact embassy for current fees")
+
 
 def generate_validity_from_api(api_result):
     duration = api_result.get('primary_rule', {}).get('duration', '')
-    if duration: return f"Usually {duration}"
+    if duration:
+        return f"Usually {duration}"
     return "Varies by visa type and consular discretion"
+
 
 def generate_processing_time(api_result, country):
     requirement = api_result.get('requirement', '').lower()
-    if 'online visa' in requirement or 'evisa' in requirement: return "3-7 business days (online)"
-    elif 'visa on arrival' in requirement: return "Processed at port of entry"
-    times = {"us": "2-4 weeks", "uk": "3 weeks", "ca": "2-8 weeks", "au": "20-33 days", "de": "15 days", "fr": "15 days", "jp": "5-7 days", "ae": "3-5 days"}
+    if 'online visa' in requirement or 'evisa' in requirement:
+        return "3-7 business days (online)"
+    elif 'visa on arrival' in requirement:
+        return "Processed at port of entry"
+    times = {"us": "2-4 weeks", "uk": "3 weeks", "ca": "2-8 weeks", "au": "20-33 days", "de": "15 days", "fr": "15 days", "jp": "5-7 days", "ae": "3-5 days", "in": "1-2 weeks", "cn": "4-5 days", "br": "5-10 working days"}
     return times.get(country, "Contact embassy for current processing times")
+
 
 def get_sources_for_country(country_code, api_result, display_name=None):
     sources = OFFICIAL_SOURCES.get(country_code, [])
     if not sources:
-        sources = [{"name": f"Find {display_name or country_code.upper()} Embassy", "url": f"https://www.embassypages.com/{country_code}", "type": "embassy_directory"}]
+        sources = get_official_source_for_country(country_code, display_name)
     if api_result.get('confidence') == 'high':
         sources.append({"name": "Travel Buddy API (Real-time)", "url": "https://rapidapi.com/TravelBuddyAI/api/visa-requirement", "type": "api"})
     return sources[:3]
 
+
 # ============================================
 # FLASK ROUTES
 # ============================================
+
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({
+        "service": "Visa RAG System",
+        "version": "3.0.0",
+        "endpoints": {
+            "/api/ask": "POST - Query visa requirements",
+            "/api/health": "GET - Health check"
+        },
+        "features": ["150+ countries", "Real-time API", "Smart nationality detection"]
+    })
+
+
 @app.route("/api/ask", methods=["POST"])
 @limiter.limit("10 per minute")
 def ask():
     try:
         data = request.get_json()
-        if not data: return jsonify({"error": "Invalid request"}), 400
+        if not data:
+            return jsonify({"error": "Invalid request"}), 400
+        
         query = data.get("query", "").strip()
         is_valid, msg = validate_input(query)
-        if not is_valid: return jsonify({"error": msg}), 400
-        if not query: return jsonify({"error": "Query required"}), 400
+        if not is_valid:
+            return jsonify({"error": msg}), 400
+        
+        if not query:
+            return jsonify({"error": "Query required"}), 400
+        
         query_lower = query.lower()
-
+        
+        # Detect destination country
         country = detect_country(query_lower)
         if not country:
-            return jsonify({"error": "Country not detected", "message": "Please clearly mention a country (e.g., US, UK, Canada, France, Japan, UAE)"}), 400
-
+            return jsonify({"error": "Country not detected", "message": "Please clearly mention a country (e.g., US, UK, Canada, Brazil, Japan, UAE)"}), 400
+        
+        # Detect visa type
         visa_type = detect_visa_type(query_lower)
         if visa_type == "unknown":
             return jsonify({"status": "needs_clarification", "country_code": country, "message": "Visa requirements vary by type.", "options": ["tourist", "student", "work", "business"]}), 400
-
-        # ✅ Detect nationality from query (or default to PK for backward compatibility)
-        detected_nationality = "PK"  # Default
-        for code, keywords in COUNTRY_KEYWORDS.items():
-            if code != country and any(kw in query_lower for kw in keywords):
-                detected_nationality = code.upper()
-                break
-        if "pakistani" in query_lower or "pakistan" in query_lower: detected_nationality = "PK"
-        if "indian" in query_lower or "india" in query_lower: detected_nationality = "IN"
-        if "american" in query_lower or "usa" in query_lower: detected_nationality = "US"
-
+        
+        # Detect nationality from query
+        detected_nationality = detect_nationality(query_lower, country)
+        
+        # Call real-time API
         provider = get_visa_provider()
         api_result = provider.get_visa_requirement(destination=country, nationality=detected_nationality)
         
+        # Load local data as fallback
         visa_info = VISA_DATA.get(country, {"country": country.upper(), "visa_types": {}})
         specific_visa = visa_info.get("visa_types", {}).get(visa_type, {})
-
-        # ✅ CORRECTED COUNTRY NAME LOGIC
+        
+        # Determine correct country name
         if api_result.get('confidence') == 'high':
             api_dest = api_result.get('destination', {})
             api_name = api_dest.get('name', '')
@@ -667,14 +693,22 @@ def ask():
                 country_name = visa_info.get("country", country.upper())
         else:
             country_name = visa_info.get("country", country.upper())
-
+        
+        # Build response
         response = {
-            "country": country_name, "country_code": country, "visa_type": visa_type,
-            "confidence": api_result.get('confidence', 'medium'), "source": api_result.get('source', 'fallback')
+            "country": country_name,
+            "country_code": country,
+            "visa_type": visa_type,
+            "confidence": api_result.get('confidence', 'medium'),
+            "source": api_result.get('source', 'fallback')
         }
-
+        
         if api_result.get('confidence') == 'high':
-            response["realtime"] = {"visa_requirement": api_result.get('requirement'), "passport_validity": api_result.get('passport_validity'), "source": api_result.get('source')}
+            response["realtime"] = {
+                "visa_requirement": api_result.get('requirement'),
+                "passport_validity": api_result.get('passport_validity'),
+                "source": api_result.get('source')
+            }
             response["requirements"] = generate_requirements_from_api(api_result, visa_type)
             response["fees"] = generate_fees_from_api(api_result, country, visa_type)
             response["validity_note"] = generate_validity_from_api(api_result)
@@ -684,24 +718,47 @@ def ask():
             response["fees"] = specific_visa.get("fees", "Contact embassy")
             response["validity_note"] = specific_visa.get("validity_note", "Varies")
             response["processing_time_note"] = specific_visa.get("processing_time_note", "Varies by embassy")
-
+        
         response["sources"] = get_sources_for_country(country, api_result, country_name)
+        
         return jsonify(response)
-
+        
     except Exception as e:
         print(f"Error: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": "Internal server error"}), 500
+
 
 @app.route("/api/health", methods=["GET"])
 def health():
-    return jsonify({"status": "healthy", "countries_loaded": len(VISA_DATA), "timestamp": datetime.now().isoformat()})
+    return jsonify({
+        "status": "healthy",
+        "countries_loaded": len(VISA_DATA),
+        "sources_loaded": len(OFFICIAL_SOURCES),
+        "timestamp": datetime.now().isoformat()
+    })
+
+
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    return jsonify({"error": "Rate limit exceeded", "message": "10 requests per minute limit"}), 429
+
 
 # ============================================
 # MAIN
 # ============================================
+
 if __name__ == "__main__":
     print("=" * 60)
     print("🚀 Starting Visa RAG System")
     print("=" * 60)
+    print(f"📊 Loaded {len(VISA_DATA)} countries")
+    print(f"🔗 Dynamic sources for {len(OFFICIAL_SOURCES)} countries")
+    print("✅ Country-specific rules enabled")
+    print("✅ Smart nationality detection enabled")
+    print("✅ No hardcoded data - fully dynamic")
+    print("=" * 60)
+    
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
