@@ -771,6 +771,171 @@ def calculate_confidence(country_code, visa_info, visa_type_specified):
         "score": confidence_score,
         "level": confidence_level
     }
+def generate_requirements_from_api(api_result, visa_type):
+    """Generate smart requirements based on API result"""
+    requirement_type = api_result.get('requirement', '').lower()
+    passport_validity = api_result.get('passport_validity', '6 months')
+    primary_rule = api_result.get('primary_rule', {}).get('name', '')
+    mandatory_reg = api_result.get('mandatory_registration', {})
+    
+    requirements = []
+    
+    # Passport requirement (universal)
+    requirements.append(f"Valid passport (valid for {passport_validity})")
+    
+    # Based on visa requirement type
+    if 'visa required' in requirement_type:
+        requirements.extend([
+            "Completed visa application form",
+            "Passport-size photographs",
+            "Proof of sufficient funds",
+            "Travel itinerary (flight and hotel bookings)",
+            "Proof of ties to home country"
+        ])
+    elif 'online visa' in requirement_type or 'evisa' in requirement_type:
+        requirements.extend([
+            "Online application submission",
+            "Scanned passport copy",
+            "Digital photograph",
+            "Payment of visa fee online"
+        ])
+    elif 'visa-free' in requirement_type:
+        requirements.append("No visa required for tourist visits")
+    elif 'visa on arrival' in requirement_type:
+        requirements.extend([
+            "Passport with sufficient blank pages",
+            "Return/onward ticket",
+            "Proof of accommodation",
+            "Sufficient funds for stay"
+        ])
+    
+    # Add mandatory registration if required
+    if mandatory_reg and mandatory_reg.get('name'):
+        requirements.append(f"Complete {mandatory_reg.get('name')} registration before travel")
+    
+    # Add visa-type specific requirements
+    if visa_type == "student":
+        requirements.append("Letter of acceptance from educational institution")
+    elif visa_type == "work":
+        requirements.append("Employment contract or job offer letter")
+    
+    return requirements[:8]  # Limit to 8 most important
+
+
+def generate_fees_from_api(api_result, country, visa_type):
+    """Generate fee information"""
+    # Common fee ranges by country
+    fee_ranges = {
+        "us": "$185",
+        "uk": "£115-£150",
+        "ca": "$100 CAD",
+        "au": "$150 AUD",
+        "nz": "$211 NZD",
+        "jp": "¥3,000",
+        "cn": "$140",
+        "in": "$25-100",
+        "ae": "$100-200",
+        "de": "€80",
+        "fr": "€80",
+        "it": "€80",
+        "es": "€80",
+        "nl": "€80",
+        "ch": "€80",
+        "ie": "€80",
+        "sg": "$30 SGD",
+        "my": "RM 20-200",
+        "th": "฿1,000-2,000",
+        "za": "R1,520",
+        "br": "R$290",
+        "mx": "$36-51 USD"
+    }
+    
+    return fee_ranges.get(country, "Contact embassy for current fees")
+
+
+def generate_validity_from_api(api_result):
+    """Generate validity information"""
+    primary_rule = api_result.get('primary_rule', {})
+    duration = primary_rule.get('duration', '')
+    
+    if duration:
+        return f"Usually {duration}"
+    
+    requirement = api_result.get('requirement', '').lower()
+    if 'visa-free' in requirement:
+        return "Usually 30-90 days depending on nationality"
+    elif 'visa on arrival' in requirement:
+        return "Usually 15-90 days"
+    
+    return "Varies by visa type and consular discretion"
+
+
+def generate_processing_time(api_result, country):
+    """Generate processing time information"""
+    requirement = api_result.get('requirement', '').lower()
+    
+    if 'online visa' in requirement or 'evisa' in requirement:
+        return "3-7 business days (online processing)"
+    elif 'visa on arrival' in requirement:
+        return "Processed at port of entry"
+    elif 'visa-free' in requirement:
+        return "No advance processing required"
+    
+    # Common processing times by country
+    times = {
+        "us": "2-4 weeks for interview scheduling",
+        "uk": "3 weeks (priority: 5 days)",
+        "ca": "2-8 weeks",
+        "au": "20-33 days",
+        "nz": "20-25 days",
+        "ae": "3-5 working days",
+        "de": "15 days (Schengen)",
+        "fr": "15 days (Schengen)",
+        "jp": "5-7 working days",
+        "cn": "4-5 working days",
+        "sg": "3 working days",
+        "za": "5-10 working days"
+    }
+    
+    return times.get(country, "Contact embassy for current processing times")
+
+
+def get_sources_for_country(country, api_result):
+    """Get official sources for a country"""
+    sources = OFFICIAL_SOURCES.get(country, [])
+    
+    # If no sources, generate embassy finder link
+    if not sources:
+        sources = [{
+            "name": f"Find {country.upper()} Embassy",
+            "url": f"https://www.embassypages.com/{country}",
+            "type": "embassy_directory"
+        }]
+    
+    # Add API source if used
+    if api_result.get('confidence') == 'high':
+        sources.append({
+            "name": "Travel Buddy API (Real-time)",
+            "url": "https://rapidapi.com/TravelBuddyAI/api/visa-requirement",
+            "type": "api"
+        })
+    
+    return sources[:3]
+
+
+def get_pakistani_note(country, visa_type):
+    """Get Pakistani-specific note"""
+    notes = {
+        "us": "Pakistani applicants face higher scrutiny. Strong ties to home country essential.",
+        "uk": "IELTS for UKVI required for students. TB test mandatory.",
+        "ca": "Biometrics mandatory. Higher financial proof often required.",
+        "ae": "Easy process with valid residence permit or employment letter.",
+        "ie": "IELTS 5.5+ typically required. Embassy interview may be required.",
+        "au": "GTE assessment stricter for Pakistani applicants.",
+        "de": "Blocked account required for students. APS certificate needed."
+    }
+    
+    return notes.get(country, "Contact embassy for Pakistani-specific requirements.")
 
 # ============================================
 # FLASK ROUTES
@@ -837,7 +1002,7 @@ def ask():
         if not country:
             return jsonify({
                 "error": "Country not detected",
-                "message": "Please clearly mention a country (e.g., US, UK, Canada)"
+                "message": "Please clearly mention a country (e.g., US, UK, Canada, France, Japan, UAE)"
             }), 400
 
         # Detect visa type
@@ -859,59 +1024,63 @@ def ask():
                 ]
             })
 
-        # Load local data
-        visa_info = VISA_DATA.get(country)
+        # ✅ PRIMARY: Get real-time data from API for ALL countries
+        provider = get_visa_provider()
+        api_result = provider.get_visa_requirement(
+            destination=country,
+            nationality="PK" if is_pakistani else "US"
+        )
+        
+        # ✅ SECONDARY: Load local data as fallback/supplement
+        visa_info = VISA_DATA.get(country, {})
         if not visa_info:
-            return jsonify({"error": "Data not available", "confidence": "low"}), 404
-
+            visa_info = {"country": country.upper(), "visa_types": {}}
+        
         visa_types = visa_info.get("visa_types", {})
-        specific_visa = visa_types.get(visa_type)
+        specific_visa = visa_types.get(visa_type, {})
 
-        if not specific_visa:
-            return jsonify({
-                "error": f"{visa_type} visa data not available for {country}",
-                "confidence": "low"
-            }), 404
-
-        # ✅ TRY REAL-TIME API
-        realtime_info = None
-        try:
-            provider = get_visa_provider()
-            api_result = provider.get_visa_requirement(
-                destination=country,
-                nationality="PK" if is_pakistani else "US"
-            )
-            if api_result.get('confidence') == 'high':
-                realtime_info = {
-                    'visa_requirement': api_result.get('requirement'),
-                    'passport_validity': api_result.get('passport_validity'),
-                    'source': api_result.get('source')
-                }
-        except Exception as e:
-            print(f"Real-time API error: {e}")
-
-        # Build response
+        # ✅ BUILD RESPONSE PRIMARILY FROM API DATA
         response = {
-            "country": visa_info.get("country"),
+            "country": api_result.get('destination', {}).get('name', country.upper()) if api_result.get('confidence') == 'high' else visa_info.get("country", country.upper()),
             "visa_type": visa_type,
-            "requirements": clean_requirements(specific_visa.get("requirements", [])),  # ← ADD THIS
-            "processing_time_note": specific_visa.get("processing_time_note", "Varies by embassy"),
-            "fees": specific_visa.get("fees", "Check official website"),
-            "validity_note": specific_visa.get("validity_note", "Varies"),
-            "sources": OFFICIAL_SOURCES.get(country, [])[:2],
-            "last_updated": visa_info.get("last_updated"),
-            "confidence": "high" if visa_info.get("source_type") == "scraped" else "medium"
+            "confidence": api_result.get('confidence', 'medium'),
+            "source": api_result.get('source', 'fallback')
         }
 
-        # ✅ ADD REALTIME DATA IF AVAILABLE
-        if realtime_info:
-            response["realtime"] = realtime_info
-            response["confidence"] = "high"
+        # Add realtime data if available
+        if api_result.get('confidence') == 'high':
+            response["realtime"] = {
+                "visa_requirement": api_result.get('requirement'),
+                "passport_validity": api_result.get('passport_validity'),
+                "primary_rule": api_result.get('primary_rule', {}).get('name'),
+                "source": api_result.get('source')
+            }
+            
+            # Generate smart requirements based on API result
+            response["requirements"] = generate_requirements_from_api(api_result, visa_type)
+            response["fees"] = generate_fees_from_api(api_result, country, visa_type)
+            response["validity_note"] = generate_validity_from_api(api_result)
+            response["processing_time_note"] = generate_processing_time(api_result, country)
+        else:
+            # Fallback to local data
+            response["requirements"] = specific_visa.get("requirements", [])
+            response["fees"] = specific_visa.get("fees", "Contact embassy")
+            response["validity_note"] = specific_visa.get("validity_note", "Varies")
+            response["processing_time_note"] = specific_visa.get("processing_time_note", "Varies by embassy")
+
+        # Add Pakistani-specific notes
+        if is_pakistani:
+            response["pakistani_note"] = get_pakistani_note(country, visa_type)
+
+        # Add official sources
+        response["sources"] = get_sources_for_country(country, api_result)
 
         return jsonify(response)
 
     except Exception as e:
         print(f"Error: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": "Internal server error"}), 500
 
 @app.route("/api/countries", methods=["GET"])
