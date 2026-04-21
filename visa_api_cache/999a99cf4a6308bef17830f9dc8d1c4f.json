@@ -1,0 +1,31 @@
+{
+  "timestamp": "2026-04-21T09:28:06.406502",
+  "data": {
+    "destination": {
+      "code": "AE",
+      "name": "United Arab Emirates",
+      "continent": "Asia",
+      "capital": "Abu Dhabi",
+      "currency": "UAE Dirham"
+    },
+    "passport": {
+      "code": "PK",
+      "name": "Pakistan",
+      "currency_code": "PKR"
+    },
+    "requirement": "Online visa required",
+    "description": "Online visa required",
+    "primary_rule": {
+      "name": "Online visa required",
+      "color": "red",
+      "link": "https://link.travel-buddy.ai/?link=2E12T1"
+    },
+    "secondary_rule": {},
+    "mandatory_registration": {},
+    "passport_validity": "6 months",
+    "embassy_url": "https://www.embassypages.com/pakistan#titlePlaceholder2",
+    "last_updated": "2026-04-21T09:28:06.406502",
+    "source": "Travel Buddy API v2",
+    "confidence": "high"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-04-21T09:26:55.340212",
+  "data": {
+    "destination": {
+      "code": "GB",
+      "name": "United Kingdom",
+      "continent": "Europe",
+      "capital": "London",
+      "currency": "Pound Sterling"
+    },
+    "passport": {
+      "code": "PK",
+      "name": "Pakistan",
+      "currency_code": "PKR"
+    },
+    "requirement": "Online visa required",
+    "description": "Duration: 180 days",
+    "primary_rule": {
+      "name": "Online visa required",
+      "duration": "180 days",
+      "color": "red",
+      "link": "https://link.travel-buddy.ai/?link=186E504T1"
+    },
+    "secondary_rule": {},
+    "mandatory_registration": {},
+    "passport_validity": "6 months",
+    "embassy_url": "https://www.embassypages.com/pakistan#titlePlaceholder2",
+    "last_updated": "2026-04-21T09:26:55.340212",
+    "source": "Travel Buddy API v2",
+    "confidence": "high"
+  }
+}
