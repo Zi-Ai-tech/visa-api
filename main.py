@@ -1039,15 +1039,16 @@ def generate_processing_time(api_result, country):
     return times.get(country, "Contact embassy for current processing times")
 
 
-def get_sources_for_country(country, api_result):
+def get_sources_for_country(country_code, api_result, display_name=None):
     """Get official sources for a country"""
-    sources = OFFICIAL_SOURCES.get(country, [])
+    sources = OFFICIAL_SOURCES.get(country_code, [])
     
     # If no sources, generate embassy finder link
     if not sources:
+        search_name = display_name if display_name else country_code.upper()
         sources = [{
-            "name": f"Find {country.upper()} Embassy",
-            "url": f"https://www.embassypages.com/{country}",
+            "name": f"Find {search_name} Embassy",
+            "url": f"https://www.embassypages.com/{country_code}",
             "type": "embassy_directory"
         }]
     
@@ -1060,7 +1061,6 @@ def get_sources_for_country(country, api_result):
         })
     
     return sources[:3]
-
 
 def get_pakistani_note(country, visa_type):
     """Get Pakistani-specific note"""
@@ -1178,9 +1178,28 @@ def ask():
         visa_types = visa_info.get("visa_types", {})
         specific_visa = visa_types.get(visa_type, {})
 
-        # ✅ BUILD RESPONSE PRIMARILY FROM API DATA
+        # ✅ BUILD RESPONSE - FIXED COUNTRY NAME
+        # Determine the correct country name
+        if api_result.get('confidence') == 'high':
+            api_destination = api_result.get('destination', {})
+            api_country_name = api_destination.get('name', '')
+            
+            # Check if the API returned the passport country instead of destination
+            passport_info = api_result.get('passport', {})
+            passport_name = passport_info.get('name', '')
+            
+            # Use the destination if it's not the same as passport, otherwise use local
+            if api_country_name and api_country_name.lower() != passport_name.lower():
+                country_name = api_country_name
+            else:
+                # Fallback to local or formatted country code
+                country_name = visa_info.get("country", country.upper())
+        else:
+            country_name = visa_info.get("country", country.upper())
+
         response = {
-            "country": api_result.get('destination', {}).get('name', country.upper()) if api_result.get('confidence') == 'high' else visa_info.get("country", country.upper()),
+            "country": country_name,
+            "country_code": country,
             "visa_type": visa_type,
             "confidence": api_result.get('confidence', 'medium'),
             "source": api_result.get('source', 'fallback')
@@ -1211,8 +1230,8 @@ def ask():
         if is_pakistani:
             response["pakistani_note"] = get_pakistani_note(country, visa_type)
 
-        # Add official sources
-        response["sources"] = get_sources_for_country(country, api_result)
+        # Add official sources - FIXED: Pass the correct country name
+        response["sources"] = get_sources_for_country(country, api_result, country_name)
 
         return jsonify(response)
 
