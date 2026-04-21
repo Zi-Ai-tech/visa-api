@@ -507,30 +507,31 @@ COUNTRY_KEYWORDS = {
 # HELPER FUNCTIONS
 # ============================================
 
+# ============================================
+# SPECIFIC QUESTION DETECTION FUNCTION
+# ============================================
 def detect_specific_question(query, country, visa_type):
     """Detect if user is asking about specific requirements like IELTS, fees, etc."""
     query_lower = query.lower()
     
-    specific_info = None
-    
-    # IELTS / English proficiency
-    if any(word in query_lower for word in ["ielts", "english", "language", "toefl"]):
+    # IELTS / English proficiency questions
+    if any(word in query_lower for word in ["ielts", "english", "language", "toefl", "pte"]):
         if country == "uk" and visa_type == "student":
-            specific_info = {
+            return {
                 "type": "ielts",
                 "title": "📚 IELTS Requirements for UK Student Visa",
                 "content": [
-                    "✅ IELTS for UKVI (Academic) is MANDATORY for Pakistani students",
+                    "✅ IELTS for UKVI (Academic) is MANDATORY",
                     "❌ Regular IELTS (Academic) is NOT accepted",
                     "📊 Minimum score: 5.5-6.5 depending on course level",
                     "🎓 Degree-level courses: Usually 6.0-6.5 required",
                     "📝 Below degree level: Minimum 5.5 in all components",
                     "⚠️ Some universities may require higher scores",
-                    "🔄 Alternative: TOEFL iBT, PTE Academic, or Cambridge English"
+                    "🔄 Alternative tests: TOEFL iBT, PTE Academic, or Cambridge English"
                 ]
             }
         elif country == "us" and visa_type == "student":
-            specific_info = {
+            return {
                 "type": "ielts",
                 "title": "📚 English Requirements for US Student Visa (F-1)",
                 "content": [
@@ -538,11 +539,12 @@ def detect_specific_question(query, country, visa_type):
                     "📊 IELTS: Typically 6.0-7.0 overall",
                     "📊 TOEFL iBT: Usually 70-100",
                     "🎓 Requirements vary by university - check with your institution",
-                    "📝 Some schools offer conditional admission with English programs"
+                    "📝 Some schools offer conditional admission with English programs",
+                    "🔄 Also accepted: Duolingo English Test, PTE Academic"
                 ]
             }
         elif country == "canada" and visa_type == "student":
-            specific_info = {
+            return {
                 "type": "ielts",
                 "title": "📚 IELTS Requirements for Canada Study Permit",
                 "content": [
@@ -554,7 +556,7 @@ def detect_specific_question(query, country, visa_type):
                 ]
             }
         elif country == "australia" and visa_type == "student":
-            specific_info = {
+            return {
                 "type": "ielts",
                 "title": "📚 IELTS Requirements for Australian Student Visa",
                 "content": [
@@ -565,36 +567,73 @@ def detect_specific_question(query, country, visa_type):
                     "🔄 Also accepted: TOEFL iBT, PTE Academic, CAE"
                 ]
             }
-        else:
-            specific_info = {
+        elif country == "ireland" and visa_type == "student":
+            return {
+                "type": "ielts",
+                "title": "📚 IELTS Requirements for Irish Student Visa",
+                "content": [
+                    "✅ English proficiency required",
+                    "📊 IELTS: Minimum 6.0-6.5 overall",
+                    "📝 Minimum 5.5-6.0 in each component",
+                    "🎓 Requirements vary by institution",
+                    "🔄 Also accepted: TOEFL, PTE, Cambridge English"
+                ]
+            }
+        elif visa_type == "student":
+            return {
                 "type": "ielts",
                 "title": f"📚 English Requirements for {country.upper()} Student Visa",
                 "content": [
                     "✅ English proficiency typically required for student visas",
                     "📋 Requirements vary by institution and course level",
-                    "🔍 Check with your specific university for exact requirements"
+                    "🔍 Check with your specific university for exact requirements",
+                    "📊 Most universities require IELTS 6.0-6.5 or equivalent"
                 ]
             }
     
-    # Fees specific question
+    # Fees specific questions
     elif any(word in query_lower for word in ["fee", "cost", "price", "charge", "how much"]):
         fee_info = generate_fees_from_api({}, country, visa_type)
-        specific_info = {
+        return {
             "type": "fees",
             "title": f"💰 Visa Fees for {country.upper()} {visa_type.title()} Visa",
-            "content": [f"📊 Current fee: {fee_info}"]
+            "content": [
+                f"📊 Current visa fee: {fee_info}",
+                "⚠️ Additional fees may apply (biometrics, service charges)",
+                "🔍 Check official website for complete fee breakdown"
+            ]
         }
     
-    # Processing time specific question
-    elif any(word in query_lower for word in ["processing", "how long", "wait time", "appointment"]):
+    # Processing time specific questions
+    elif any(word in query_lower for word in ["processing", "how long", "wait time", "appointment", "timeline"]):
         time_info = generate_processing_time({}, country)
-        specific_info = {
+        return {
             "type": "processing",
             "title": f"⏱️ Processing Time for {country.upper()} Visa",
-            "content": [f"📊 {time_info}"]
+            "content": [
+                f"📊 Estimated processing: {time_info}",
+                "⚠️ Times vary by embassy/consulate and season",
+                "💡 Apply well in advance of your travel date"
+            ]
         }
     
-    return specific_info
+    # Required documents specific questions
+    elif any(word in query_lower for word in ["document", "paperwork", "what do i need", "required"]):
+        return {
+            "type": "documents",
+            "title": f"📄 Required Documents for {country.upper()} {visa_type.title()} Visa",
+            "content": [
+                "✅ Valid passport (with sufficient validity)",
+                "✅ Completed visa application form",
+                "✅ Passport-size photographs",
+                "✅ Proof of financial means",
+                "✅ Travel itinerary or flight reservation",
+                "✅ Proof of accommodation",
+                "📋 Additional documents may apply - check embassy website"
+            ]
+        }
+    
+    return None
 
 def validate_input(query):
     if not query or not isinstance(query, str) or len(query) > 500:
@@ -753,6 +792,7 @@ def home():
     })
 
 
+
 @app.route("/api/ask", methods=["POST"])
 @limiter.limit("10 per minute")
 def ask():
@@ -804,7 +844,38 @@ def ask():
         else:
             country_name = visa_info.get("country", country.upper())
         
-        # Build response
+        # ============================================
+        # CHECK FOR SPECIFIC QUESTIONS (IELTS, FEES, ETC.)
+        # ============================================
+        specific_question = detect_specific_question(query_lower, country, visa_type)
+        
+        if specific_question:
+            # Build focused response for specific question
+            response = {
+                "country": country_name,
+                "country_code": country,
+                "visa_type": visa_type,
+                "confidence": api_result.get('confidence', 'medium'),
+                "source": api_result.get('source', 'fallback'),
+                "question_type": specific_question["type"],
+                "direct_answer": specific_question["title"],
+                "specific_details": specific_question["content"],
+                "sources": get_sources_for_country(country, api_result, country_name)
+            }
+            
+            # Add realtime context if available
+            if api_result.get('confidence') == 'high':
+                response["realtime"] = {
+                    "visa_requirement": api_result.get('requirement'),
+                    "passport_validity": api_result.get('passport_validity'),
+                    "source": api_result.get('source')
+                }
+            
+            return jsonify(response)
+        
+        # ============================================
+        # STANDARD RESPONSE (NO SPECIFIC QUESTION)
+        # ============================================
         response = {
             "country": country_name,
             "country_code": country,
