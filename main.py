@@ -20,13 +20,13 @@ limiter = Limiter(
     storage_uri="memory://"
 )
 
-# =========================
-# CACHE SYSTEM
-# =========================
 CACHE = {}
-CACHE_TIMEOUT = 1800  # 30 min
+CACHE_TIMEOUT = 1800
 
 
+# =========================
+# CACHE
+# =========================
 def cache_key(query):
     return hashlib.md5(query.encode()).hexdigest()
 
@@ -59,14 +59,16 @@ def validate(query):
 # =========================
 def detect_country(query):
     query = query.lower()
+
     mapping = {
-        "us": ["usa", "america"],
-        "uk": ["uk", "britain"],
+        "us": ["usa", "america", "united states"],
+        "uk": ["uk", "britain", "united kingdom", "england"],
         "germany": ["germany"],
         "canada": ["canada"],
         "australia": ["australia"],
-        "uae": ["uae", "dubai"]
+        "uae": ["uae", "dubai", "emirates"],
     }
+
     for k, v in mapping.items():
         if any(x in query for x in v):
             return k
@@ -85,39 +87,92 @@ def detect_visa_type(query):
 
 
 # =========================
-# TRUST LAYER
+# LOAD LOCAL JSON
 # =========================
-def build_trust(api_result):
-    return {
-        "last_updated": api_result.get("last_updated"),
-        "confidence": api_result.get("confidence"),
-        "source": api_result.get("source"),
-        "note": "Always verify with official embassy."
-    }
+def load_country_data(country):
+    try:
+        path = f"visa_data/{country}.json"
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except:
+        pass
+    return None
 
 
 # =========================
-# FORMAT RESPONSE
+# FORMAT RESPONSE (FIXED)
 # =========================
-def format_response(query, country, visa_type, api_result):
+def format_response(api_result, query, country, visa_type):
+    is_ielts = "ielts" in query.lower()
 
-    return {
-        "query": query,
-        "country": api_result["destination"]["name"],
+    # API fields
+    visa_requirement = api_result.get("requirement", "Check embassy")
+    passport_validity = api_result.get("passport_validity", "6 months recommended")
+    description = api_result.get("description", "Varies")
+
+    # Load local data
+    local_data = load_country_data(country)
+
+    response = {
+        "country": api_result.get("destination", {}).get("name", country.title()),
         "visa_type": visa_type,
+        "confidence": api_result.get("confidence", "medium"),
 
-        "summary": {
-            "visa_requirement": api_result.get("requirement"),
-            "description": api_result.get("description"),
+        "realtime": {
+            "visa_requirement": visa_requirement,
+            "passport_validity": passport_validity
         },
 
-        "details": {
-            "passport_validity": api_result.get("passport_validity"),
-            "requirements": api_result.get("primary_rule", {}),
-        },
+        "fees": "Contact embassy",
+        "processing_time_note": "Varies",
+        "validity_note": description,
 
-        "trust": build_trust(api_result)
+        "requirements": [],
+        "sources": []
     }
+
+    # =========================
+    # LOCAL DATA MERGE
+    # =========================
+    if local_data and visa_type in local_data.get("visas", {}):
+        visa_info = local_data["visas"][visa_type]
+
+        response["requirements"] = visa_info.get("requirements", [])
+        response["fees"] = visa_info.get("fees", response["fees"])
+        response["processing_time_note"] = visa_info.get("processing_time", "Varies")
+        response["validity_note"] = visa_info.get("validity", description)
+
+        response["sources"] = local_data.get("sources", [])
+
+    # =========================
+    # IELTS HANDLING
+    # =========================
+    if is_ielts:
+        response["question_type"] = "ielts"
+
+        if local_data and visa_type in local_data.get("visas", {}):
+            ielts_required = local_data["visas"][visa_type].get("ielts_required")
+
+            if ielts_required is True:
+                answer = "Yes, IELTS is generally required."
+            elif ielts_required is False:
+                answer = "No, IELTS is not strictly required."
+            else:
+                answer = "Depends on university requirements."
+        else:
+            answer = "Depends on university and visa requirements."
+
+        response["direct_answer"] = answer
+
+        response["specific_details"] = [
+            "English proficiency is required for most student visas",
+            "IELTS is widely accepted but alternatives may exist",
+            "Some universities accept MOI or other tests",
+            "Always confirm with official immigration authority"
+        ]
+
+    return response
 
 
 # =========================
@@ -151,7 +206,8 @@ def ask():
         provider = get_visa_provider()
         api_result = provider.get_visa_requirement(destination=country, nationality="PK")
 
-        response = format_response(query, country, visa_type, api_result)
+        # ✅ FIXED CALL
+        response = format_response(api_result, query, country, visa_type)
 
         set_cache(key, response)
 
@@ -171,4 +227,4 @@ def health():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=5000, debug=True)
