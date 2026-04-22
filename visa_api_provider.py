@@ -130,71 +130,35 @@ class VisaAPIProvider:
         
         return self._get_fallback_response(dest_code, passport_code)
     
-    def _format_v2_response(self, api_response: Dict, destination: str, nationality: str) -> Dict:
-        """Format v2 API response"""
+    def _format_v2_response(self, api_response, destination, nationality):
+
         data = api_response.get('data', api_response)
-    
+
         dest_info = data.get('destination', {})
         passport_info = data.get('passport', {})
         visa_rules = data.get('visa_rules', {})
-        primary_rule = visa_rules.get('primary_rule', {})
-        secondary_rule = visa_rules.get('secondary_rule', {})
-        mandatory_reg = data.get('mandatory_registration', {})
-    
-        # Determine the best requirement description
-        requirement = primary_rule.get('name', 'unknown')
-        if secondary_rule and secondary_rule.get('name'):
-            requirement = f"{requirement} or {secondary_rule.get('name')}"
-    
-        # Build description
-        description_parts = []
-        if primary_rule.get('duration'):
-            description_parts.append(f"Duration: {primary_rule.get('duration')}")
-        if mandatory_reg and mandatory_reg.get('name'):
-            description_parts.append(f"Required: {mandatory_reg.get('name')}")
-    
-        description = "; ".join(description_parts) if description_parts else requirement
-    
-        # ✅ FIX: Use the destination we requested, not what API returned
-        # The API sometimes returns passport info in the destination field
-        requested_dest_name = self._get_country_name_from_code(destination)
-    
-        # Check if API returned passport country as destination (common bug)
-        api_dest_name = dest_info.get('name', '')
-        passport_name = passport_info.get('name', '')
-    
-        # If API destination matches passport, it's wrong - use our requested destination
-        if api_dest_name and api_dest_name.lower() == passport_name.lower():
-            final_dest_name = requested_dest_name
-            final_dest_code = destination.upper()
-        else:
-            final_dest_name = api_dest_name if api_dest_name else requested_dest_name
-            final_dest_code = dest_info.get('code', destination.upper())
-    
+
+        primary = visa_rules.get('primary_rule', {})
+
+        requirement = primary.get('name', 'Unknown')
+
+        description = primary.get('description', '') or primary.get('duration', '')
+
         return {
-            'destination': {
-            'code': final_dest_code,
-            'name': final_dest_name,
-            'continent': dest_info.get('continent', 'Unknown'),
-            'capital': dest_info.get('capital', 'Unknown'),
-            'currency': dest_info.get('currency', 'Unknown')
-        },
-        'passport': {
-            'code': passport_info.get('code', nationality),
-            'name': passport_info.get('name', nationality),
-            'currency_code': passport_info.get('currency_code', '')
-        },
-        'requirement': requirement,
-        'description': description,
-        'primary_rule': primary_rule,
-        'secondary_rule': secondary_rule,
-        'mandatory_registration': mandatory_reg,
-        'passport_validity': dest_info.get('passport_validity', '6 months recommended'),
-        'embassy_url': dest_info.get('embassy_url', ''),
-        'last_updated': datetime.now().isoformat(),
-        'source': 'Travel Buddy API v2',
-        'confidence': 'high'
-    }
+            "destination": {
+                "code": destination,
+                "name": self._get_country_name_from_code(destination)
+            },
+            "passport": passport_info,
+            "requirement": requirement,
+            "description": description,
+            "passport_validity": dest_info.get("passport_validity", "6 months"),
+            "primary_rule": primary,
+
+            "last_updated": datetime.now().isoformat(),
+            "source": "TravelBuddy API",
+            "confidence": "high"
+        }
 
     def _get_country_name_from_code(self, code: str) -> str:
         """Convert country code to proper name"""
