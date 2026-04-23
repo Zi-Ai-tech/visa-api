@@ -10,7 +10,7 @@ from flask_limiter.util import get_remote_address
 from dotenv import load_dotenv
 
 from visa_api_provider import get_visa_provider
-from rag_data_provider import get_visa_info
+# from rag_data_provider import get_visa_info
 from app.services.qdrant_service import QdrantService
 from app.services.llm_service import LLMService
 from app.services.user_service import UserService
@@ -296,7 +296,7 @@ def ask():
 
         country = detect_country(query)
         visa_type = detect_visa_type(query)
-        nationality = detect_nationality(query)
+        nationality = data.get("nationality") or detect_nationality(query)
 
         if not country:
             return safe_error(
