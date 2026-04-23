@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-04-21T15:14:45.576886",
+  "data": {
+    "destination": {
+      "code": "PAKISTAN",
+      "name": "PAKISTAN",
+      "continent": "Unknown",
+      "capital": "Unknown",
+      "currency": "Unknown"
+    },
+    "passport": {
+      "code": "PK",
+      "name": "PK",
+      "currency_code": ""
+    },
+    "requirement": "unknown",
+    "description": "unknown",
+    "primary_rule": {},
+    "secondary_rule": {},
+    "mandatory_registration": {},
+    "passport_validity": "6 months recommended",
+    "embassy_url": "",
+    "last_updated": "2026-04-21T15:14:45.576886",
+    "source": "Travel Buddy API v2",
+    "confidence": "high"
+  }
+}

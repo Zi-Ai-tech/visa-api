@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-04-22T11:07:38.389071",
+  "data": {
+    "destination": {
+      "code": "CA",
+      "name": "Canada"
+    },
+    "passport": {
+      "code": "PK",
+      "name": "Pakistan",
+      "currency_code": "PKR"
+    },
+    "requirement": "Visa required",
+    "description": "",
+    "passport_validity": "Valid for period of stay",
+    "primary_rule": {
+      "name": "Visa required",
+      "color": "red"
+    },
+    "last_updated": "2026-04-22T11:07:38.389071",
+    "source": "TravelBuddy API",
+    "confidence": "high"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-04-21T16:43:46.874776",
+  "data": {
+    "destination": {
+      "code": "SA",
+      "name": "Saudi Arabia",
+      "continent": "Asia",
+      "capital": "Riyadh",
+      "currency": "Saudi Riyal"
+    },
+    "passport": {
+      "code": "PK",
+      "name": "Pakistan",
+      "currency_code": "PKR"
+    },
+    "requirement": "Visa required",
+    "description": "Visa required",
+    "primary_rule": {
+      "name": "Visa required",
+      "color": "red"
+    },
+    "secondary_rule": {},
+    "mandatory_registration": {},
+    "passport_validity": "6 months",
+    "embassy_url": "https://www.embassypages.com/pakistan#titlePlaceholder2",
+    "last_updated": "2026-04-21T16:43:46.874776",
+    "source": "Travel Buddy API v2",
+    "confidence": "high"
+  }
+}

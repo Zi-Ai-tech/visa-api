@@ -1,0 +1,31 @@
+{
+  "timestamp": "2026-04-21T16:56:22.033890",
+  "data": {
+    "destination": {
+      "code": "ZA",
+      "name": "South Africa",
+      "continent": "Africa",
+      "capital": "Pretoria",
+      "currency": "South African Rand"
+    },
+    "passport": {
+      "code": "PK",
+      "name": "Pakistan",
+      "currency_code": "PKR"
+    },
+    "requirement": "eVisa",
+    "description": "eVisa",
+    "primary_rule": {
+      "name": "eVisa",
+      "color": "blue",
+      "link": "https://link.travel-buddy.ai/?link=197E124T1"
+    },
+    "secondary_rule": {},
+    "mandatory_registration": {},
+    "passport_validity": "1 month longer than the duration of stay",
+    "embassy_url": "https://www.embassypages.com/pakistan#titlePlaceholder2",
+    "last_updated": "2026-04-21T16:56:22.033890",
+    "source": "Travel Buddy API v2",
+    "confidence": "high"
+  }
+}
